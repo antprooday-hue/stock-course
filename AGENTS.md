@@ -15,3 +15,4 @@ Rules:
 - Nickname should be stored locally and used naturally.
 - Certificate printing must use a dedicated print-safe view or print stylesheet.
 - Never add duplicate navigation paths or redundant CTAs.
+- you are able to use Figma Implement Design and Figma skill
