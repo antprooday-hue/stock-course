@@ -80,43 +80,45 @@ export function CourseOverviewScreen() {
 
       <div className="mx-auto max-w-4xl px-6 py-8">
         <h3 className="mb-6 text-lg font-semibold text-slate-900">
-          Understanding Stocks with NVIDIA
+          Beginner Stock Foundations
         </h3>
         <ScrollReveal delayMs={40}>
           <div className="space-y-4">
-          {lessonCatalog.map((lesson) => {
-            const completed = progressState.completedLessonIds.includes(lesson.id);
-            const playable = !lesson.locked;
+            {lessonCatalog.map((lesson) => {
+              const completed = progressState.completedLessonIds.includes(lesson.id);
+              const playable =
+                lesson.id === 1 ||
+                progressState.completedLessonIds.includes((lesson.id - 1) as number);
 
-            return playable ? (
-              <Link
-                key={lesson.id}
-                className="group block rounded-2xl border-2 border-transparent bg-card p-6 text-left shadow-[0_12px_30px_rgba(15,23,42,0.05)] transition-all hover:-translate-y-0.5 hover:border-primary/20 hover:bg-card/80 hover:shadow-[0_20px_40px_rgba(22,163,74,0.12)]"
-                href={`/lesson/${lesson.id}`}
-              >
-                <LessonRow
-                  completed={completed}
-                  description={lesson.description}
-                  duration={lesson.duration}
-                  locked={false}
-                  title={lesson.title}
-                />
-              </Link>
-            ) : (
-              <div
-                key={lesson.id}
-                className="cursor-not-allowed rounded-2xl bg-card p-6 text-left opacity-50 shadow-sm"
-              >
-                <LessonRow
-                  completed={false}
-                  description={lesson.description}
-                  duration={lesson.duration}
-                  locked={true}
-                  title={lesson.title}
-                />
-              </div>
-            );
-          })}
+              return playable ? (
+                <Link
+                  key={lesson.id}
+                  className="group block rounded-2xl border-2 border-transparent bg-card p-6 text-left shadow-[0_12px_30px_rgba(15,23,42,0.05)] transition-all hover:-translate-y-0.5 hover:border-primary/20 hover:bg-card/80 hover:shadow-[0_20px_40px_rgba(22,163,74,0.12)]"
+                  href={`/lesson/${lesson.id}`}
+                >
+                  <LessonRow
+                    completed={completed}
+                    description={lesson.description}
+                    duration={lesson.duration}
+                    locked={false}
+                    title={lesson.title}
+                  />
+                </Link>
+              ) : (
+                <div
+                  key={lesson.id}
+                  className="cursor-not-allowed rounded-2xl bg-card p-6 text-left opacity-50 shadow-sm"
+                >
+                  <LessonRow
+                    completed={false}
+                    description={lesson.description}
+                    duration={lesson.duration}
+                    locked={true}
+                    title={lesson.title}
+                  />
+                </div>
+              );
+            })}
           </div>
         </ScrollReveal>
 
@@ -126,40 +128,39 @@ export function CourseOverviewScreen() {
               <span className="text-gradient-emerald">🎯 Your goal</span>
             </h4>
             <p className="text-sm text-muted-foreground">
-              Complete all lessons to earn your certificate and gain confidence in
-              understanding stocks
+              Complete all 10 lessons to unlock your certificate and build confidence with ownership, exchanges, risk, market cap, and beginner stock decisions.
             </p>
           </div>
         </ScrollReveal>
 
         <ScrollReveal delayMs={140}>
           <div className="mt-6 rounded-2xl border border-border bg-card/95 p-6 shadow-[0_16px_40px_rgba(15,23,42,0.05)]">
-          <div className="mb-2 flex items-center justify-between gap-4">
-            <h4 className="font-semibold text-foreground">Review queue</h4>
-            <span className="rounded-full bg-secondary px-3 py-1 text-xs font-medium text-muted-foreground">
-              {progressState.reviewQueue.length} item
-              {progressState.reviewQueue.length === 1 ? "" : "s"}
-            </span>
-          </div>
-          <p className="mb-4 text-sm text-muted-foreground">
-            Wrong answers are saved here for lightweight follow-up.
-          </p>
-          {progressState.reviewQueue.length ? (
-            <ul className="space-y-2 text-sm text-foreground">
-              {progressState.reviewQueue.map((item) => (
-                <li
-                  key={item}
-                  className="rounded-xl border border-primary/10 bg-[linear-gradient(180deg,#f8fbf9_0%,#f2f5f3_100%)] px-4 py-3"
-                >
-                  {item}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div className="rounded-xl bg-secondary px-4 py-3 text-sm text-muted-foreground">
-              No review items yet. Keep going.
+            <div className="mb-2 flex items-center justify-between gap-4">
+              <h4 className="font-semibold text-foreground">Review queue</h4>
+              <span className="rounded-full bg-secondary px-3 py-1 text-xs font-medium text-muted-foreground">
+                {progressState.reviewQueue.length} item
+                {progressState.reviewQueue.length === 1 ? "" : "s"}
+              </span>
             </div>
-          )}
+            <p className="mb-4 text-sm text-muted-foreground">
+              Wrong answers are saved here for lightweight follow-up.
+            </p>
+            {progressState.reviewQueue.length ? (
+              <ul className="space-y-2 text-sm text-foreground">
+                {progressState.reviewQueue.map((item) => (
+                  <li
+                    key={item}
+                    className="rounded-xl border border-primary/10 bg-[linear-gradient(180deg,#f8fbf9_0%,#f2f5f3_100%)] px-4 py-3"
+                  >
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="rounded-xl bg-secondary px-4 py-3 text-sm text-muted-foreground">
+                No review items yet. Keep going.
+              </div>
+            )}
           </div>
         </ScrollReveal>
       </div>

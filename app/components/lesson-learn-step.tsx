@@ -34,6 +34,22 @@ export function LessonLearnStep({
           </p>
         </div>
 
+        <div className="mb-6 rounded-2xl border border-primary/10 bg-card p-6 shadow-[0_10px_24px_rgba(22,153,76,0.06)]">
+          <h4 className="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-primary/80">
+            In This Lesson
+          </h4>
+          <div className="grid gap-3 md:grid-cols-3">
+            {content.supportActivities.map((item) => (
+              <div
+                key={item}
+                className="rounded-xl bg-[linear-gradient(180deg,#f7fbf8_0%,#eef6f1_100%)] px-4 py-4 text-sm text-foreground/85"
+              >
+                {item}
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div className="mb-4 rounded-2xl border border-primary/20 bg-accent/50 p-6">
           <div className="flex items-start gap-3">
             <LightbulbIcon className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
@@ -46,6 +62,13 @@ export function LessonLearnStep({
               </p>
             </div>
           </div>
+        </div>
+
+        <div className="mb-4 rounded-2xl border border-primary/20 bg-[linear-gradient(180deg,#f0fff5_0%,#eafbf1_100%)] p-6">
+          <h4 className="mb-2 font-semibold text-foreground">Try it in the lab</h4>
+          <p className="text-sm leading-relaxed text-foreground/80">
+            {content.labMoment}
+          </p>
         </div>
 
         <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-6">
@@ -76,7 +99,17 @@ export function LessonLearnStep({
 function VisualAid({
   type,
 }: {
-  type: "ownership" | "price" | "chart" | "change";
+  type:
+    | "ownership"
+    | "funding"
+    | "returns"
+    | "news"
+    | "exchange"
+    | "marketcap"
+    | "timeline"
+    | "checklist"
+    | "diversification"
+    | "sandbox";
 }) {
   if (type === "ownership") {
     return (
@@ -86,78 +119,202 @@ function VisualAid({
             <div className="mb-3 flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/20 text-3xl">
               🏢
             </div>
-            <p className="text-sm font-semibold">NVIDIA</p>
-            <p className="text-xs text-muted-foreground">The Company</p>
+            <p className="text-sm font-semibold">The Company</p>
+            <p className="text-xs text-muted-foreground">split into shares</p>
           </div>
           <div className="text-3xl text-primary">→</div>
           <div className="text-center">
             <div className="mb-3 grid grid-cols-3 gap-2">
               {Array.from({ length: 9 }, (_, index) => (
-                <div
-                  key={index}
-                  className="h-6 w-6 rounded bg-primary/30"
-                />
+                <div key={index} className="h-6 w-6 rounded bg-primary/30" />
               ))}
             </div>
-            <p className="text-sm font-semibold">2.5B shares</p>
-            <p className="text-xs text-muted-foreground">Divided ownership</p>
+            <p className="text-sm font-semibold">Ownership slices</p>
+            <p className="text-xs text-muted-foreground">some yours, some others</p>
           </div>
         </div>
       </div>
     );
   }
 
-  if (type === "price") {
+  if (type === "funding") {
     return (
-      <div className="text-center">
-        <div className="inline-block rounded-xl border-2 border-primary/30 bg-card p-6">
-          <p className="mb-2 text-sm text-muted-foreground">NVDA Share Price</p>
-          <p className="text-5xl font-bold text-primary">$500.00</p>
-          <p className="mt-2 text-sm text-green-600">+$12.50 (+2.56%)</p>
+      <div className="grid gap-4 md:grid-cols-3">
+        <CardMetric label="Borrow" value="$2M" />
+        <CardMetric accent label="Sell Ownership" value="$5M" />
+        <CardMetric label="Founder Keeps" value="72%" />
+      </div>
+    );
+  }
+
+  if (type === "returns") {
+    return (
+      <div className="grid gap-4 md:grid-cols-3">
+        <CardMetric label="Buy" value="$10" />
+        <CardMetric label="Sell" value="$14" />
+        <CardMetric accent label="Outcome" value="Gain" />
+      </div>
+    );
+  }
+
+  if (type === "news") {
+    return (
+      <div className="grid gap-4 md:grid-cols-[1.1fr_0.9fr]">
+        <div className="rounded-xl bg-card p-4">
+          <p className="mb-3 text-sm font-semibold text-foreground">
+            Headline reaction
+          </p>
+          <div className="space-y-2">
+            <div className="rounded-lg bg-accent px-3 py-2 text-sm text-foreground">
+              Strong earnings report
+            </div>
+            <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-foreground">
+              Product recall warning
+            </div>
+            <div className="rounded-lg bg-secondary px-3 py-2 text-sm text-foreground">
+              New product rumor
+            </div>
+          </div>
+        </div>
+        <div className="rounded-xl bg-card p-4">
+          <p className="mb-3 text-sm font-semibold text-foreground">
+            Price pressure
+          </p>
+          <div className="h-3 rounded-full bg-muted">
+            <div className="h-3 w-[68%] rounded-full bg-primary" />
+          </div>
+          <p className="mt-3 text-sm text-muted-foreground">
+            More buyers than sellers can push price up.
+          </p>
         </div>
       </div>
     );
   }
 
-  if (type === "chart") {
+  if (type === "exchange") {
     return (
-      <div className="rounded-xl bg-card p-4">
-        <svg className="h-48 w-full" viewBox="0 0 400 200">
-          <polyline
-            fill="none"
-            points="20,150 60,140 100,120 140,130 180,100 220,110 260,80 300,70 340,60 380,50"
-            stroke="#16A34A"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="3"
-          />
-          <line x1="20" x2="380" y1="180" y2="180" stroke="#E5E7EB" strokeWidth="2" />
-          <line x1="20" x2="20" y1="20" y2="180" stroke="#E5E7EB" strokeWidth="2" />
-        </svg>
-        <div className="mt-2 flex justify-between px-2 text-xs text-muted-foreground">
-          <span>Jan</span>
-          <span>Mar</span>
-          <span>Jun</span>
-          <span>Sep</span>
-          <span>Dec</span>
+      <div className="grid gap-3 md:grid-cols-4">
+        {["Buyer", "Exchange", "Trade", "Seller"].map((item, index) => (
+          <div
+            key={item}
+            className={`rounded-xl p-4 text-center ${
+              index === 1 ? "bg-accent text-primary" : "bg-card text-foreground"
+            }`}
+          >
+            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+              Node
+            </p>
+            <p className="mt-2 text-lg font-semibold">{item}</p>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (type === "marketcap") {
+    return (
+      <div className="grid gap-4 md:grid-cols-3">
+        <CardMetric label="Share Price" value="$40" />
+        <CardMetric label="Shares Out" value="1B" />
+        <CardMetric accent label="Market Cap" value="$40B" />
+      </div>
+    );
+  }
+
+  if (type === "timeline") {
+    return (
+      <div className="rounded-xl bg-card p-5">
+        <div className="mb-4 flex items-center justify-between text-sm font-semibold text-foreground">
+          <span>Short-term</span>
+          <span>Long-term</span>
+        </div>
+        <div className="relative h-3 rounded-full bg-muted">
+          <div className="absolute left-[18%] top-1/2 h-6 w-6 -translate-y-1/2 rounded-full border-4 border-white bg-primary shadow-md" />
+          <div className="absolute left-[76%] top-1/2 h-6 w-6 -translate-y-1/2 rounded-full border-4 border-white bg-accent-foreground shadow-md" />
+        </div>
+      </div>
+    );
+  }
+
+  if (type === "checklist") {
+    return (
+      <div className="grid gap-3 md:grid-cols-3">
+        {[
+          "How does it make money?",
+          "What risks matter first?",
+          "Do I understand the business?",
+        ].map((item) => (
+          <div key={item} className="rounded-xl bg-card px-4 py-4 text-sm text-foreground">
+            {item}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (type === "diversification") {
+    return (
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-xl bg-red-50 p-5 text-center">
+          <p className="text-sm font-semibold text-red-700">One basket</p>
+          <div className="mt-3 flex justify-center gap-1">
+            {Array.from({ length: 6 }, (_, index) => (
+              <span key={index} className="text-2xl">
+                🥚
+              </span>
+            ))}
+          </div>
+        </div>
+        <div className="rounded-xl bg-accent p-5 text-center">
+          <p className="text-sm font-semibold text-primary">Spread out</p>
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            {Array.from({ length: 6 }, (_, index) => (
+              <span key={index} className="text-2xl text-center">
+                🥚
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex justify-center gap-4">
-      <div className="rounded-xl border-2 border-green-500 bg-green-50 p-4 text-center">
-        <p className="mb-1 text-xs text-muted-foreground">Positive Change</p>
-        <p className="text-2xl font-bold text-green-600">+$5.00</p>
-        <p className="text-sm text-green-600">+2.5%</p>
+    <div className="rounded-xl bg-card p-4">
+      <div className="mb-3 flex items-center justify-between">
+        <p className="text-sm font-semibold text-foreground">Chart labels</p>
+        <span className="rounded-full bg-accent px-3 py-1 text-xs text-primary">
+          tap to compare
+        </span>
       </div>
-      <div className="rounded-xl border-2 border-red-500 bg-red-50 p-4 text-center">
-        <p className="mb-1 text-xs text-muted-foreground">Negative Change</p>
-        <p className="text-2xl font-bold text-red-600">-$3.20</p>
-        <p className="text-sm text-red-600">-1.6%</p>
+      <div className="grid gap-3 md:grid-cols-5">
+        {["volatile", "steady", "uptrend", "drop", "recovery"].map((item) => (
+          <div key={item} className="rounded-lg bg-secondary px-3 py-3 text-center text-sm text-foreground">
+            {item}
+          </div>
+        ))}
       </div>
     </div>
   );
 }
 
+function CardMetric({
+  accent = false,
+  label,
+  value,
+}: {
+  accent?: boolean;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className={`rounded-xl p-4 text-center ${accent ? "bg-accent" : "bg-card"}`}>
+      <p className="text-xs uppercase tracking-[0.15em] text-muted-foreground">
+        {label}
+      </p>
+      <p className={`mt-2 text-2xl font-bold ${accent ? "text-primary" : "text-foreground"}`}>
+        {value}
+      </p>
+    </div>
+  );
+}

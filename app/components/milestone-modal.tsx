@@ -4,12 +4,18 @@ import { useEffect, useState } from "react";
 import { AwardIcon, TrendingUpIcon } from "./icons";
 
 type MilestoneModalProps = {
+  lessonNumber: number;
+  lessonTitle: string;
   onContinue: () => void;
 };
 
-export function MilestoneModal({ onContinue }: MilestoneModalProps) {
-  const rank = 1247;
-  const newRank = 856;
+export function MilestoneModal({
+  lessonNumber,
+  lessonTitle,
+  onContinue,
+}: MilestoneModalProps) {
+  const rank = 1840 - lessonNumber * 73;
+  const newRank = rank - (110 + lessonNumber * 17);
   const [animatedRank, setAnimatedRank] = useState(rank);
 
   useEffect(() => {
@@ -30,7 +36,7 @@ export function MilestoneModal({ onContinue }: MilestoneModalProps) {
     }, duration / steps);
 
     return () => window.clearInterval(interval);
-  }, []);
+  }, [newRank, rank]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6 backdrop-blur-sm">
@@ -43,7 +49,9 @@ export function MilestoneModal({ onContinue }: MilestoneModalProps) {
           Lesson Complete! 🎉
         </h2>
         <p className="mb-8 text-muted-foreground">
-          You&apos;re making great progress on your learning journey
+          You finished{" "}
+          <span className="font-semibold text-foreground">{lessonTitle}</span>{" "}
+          and climbed again on the course leaderboard.
         </p>
 
         <div className="mb-8 rounded-2xl border border-primary/20 bg-gradient-to-br from-accent to-primary/5 p-6">
@@ -63,7 +71,7 @@ export function MilestoneModal({ onContinue }: MilestoneModalProps) {
             </span>
           </div>
           <p className="mt-3 text-sm text-muted-foreground">
-            You moved up {rank - newRank} positions!
+            You moved up {rank - newRank} positions after lesson {lessonNumber}.
           </p>
         </div>
 
@@ -71,10 +79,9 @@ export function MilestoneModal({ onContinue }: MilestoneModalProps) {
           className="w-full rounded-xl bg-primary px-8 py-4 text-lg text-primary-foreground shadow-md transition-all hover:bg-primary/90"
           onClick={onContinue}
         >
-          Continue learning
+          Continue to the next lesson
         </button>
       </div>
     </div>
   );
 }
-

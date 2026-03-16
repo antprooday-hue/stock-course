@@ -45,12 +45,6 @@ export function LessonPlayerScreen({ lessonId }: LessonPlayerScreenProps) {
     }
 
     markLessonComplete(lessonId);
-
-    if (lessonId === 2) {
-      router.push("/analysis");
-      return;
-    }
-
     setShowMilestone(true);
   }
 
@@ -105,8 +99,16 @@ export function LessonPlayerScreen({ lessonId }: LessonPlayerScreenProps) {
 
       {showMilestone ? (
         <MilestoneModal
+          lessonNumber={lessonId}
+          lessonTitle={lesson.title}
           onContinue={() => {
             setShowMilestone(false);
+
+            if (lessonId === 10) {
+              router.push("/analysis");
+              return;
+            }
+
             router.push("/course");
           }}
         />
@@ -114,4 +116,3 @@ export function LessonPlayerScreen({ lessonId }: LessonPlayerScreenProps) {
     </div>
   );
 }
-
