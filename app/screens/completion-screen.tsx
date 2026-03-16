@@ -39,7 +39,7 @@ export function CompletionScreen() {
   async function handleShare() {
     const shareData = {
       title: "Stock Academy Certificate",
-      text: `${nickname} completed Stock Fundamentals.`,
+      text: `${nickname} completed Beginner Stock Foundations.`,
       url: `${window.location.origin}/certificate`,
     };
 
@@ -84,7 +84,7 @@ export function CompletionScreen() {
             Congratulations, {nickname}! 🎉
           </h1>
           <p className="mb-10 text-xl text-muted-foreground">
-            You&apos;ve completed the Stock Fundamentals course
+            You&apos;ve completed the Beginner Stock Foundations course
           </p>
 
           <ScrollReveal className="mb-10" delayMs={80}>
@@ -92,17 +92,17 @@ export function CompletionScreen() {
               <CompletionStat
                 icon={<ClockIcon className="mx-auto mb-2 h-6 w-6 text-primary" />}
                 label="Completion time"
-                value="42 minutes"
+                value="74 minutes"
               />
               <CompletionStat
                 icon={<BrainIcon className="mx-auto mb-2 h-6 w-6 text-primary" />}
-                label="Concepts mastered"
-                value="8"
+                label="Lessons completed"
+                value="10"
               />
               <CompletionStat
                 icon={<AwardIcon className="mx-auto mb-2 h-6 w-6 text-primary" />}
                 label="Accuracy"
-                value="95%"
+                value="96%"
               />
             </div>
           </ScrollReveal>
@@ -118,7 +118,7 @@ export function CompletionScreen() {
               <p className="mb-6 text-muted-foreground">
                 This certifies that{" "}
                 <span className="font-semibold text-foreground">{nickname}</span>{" "}
-                has successfully completed the Stock Fundamentals course
+                has successfully completed the Beginner Stock Foundations course
               </p>
               <div className="flex flex-col justify-center gap-3 sm:flex-row">
                 <button

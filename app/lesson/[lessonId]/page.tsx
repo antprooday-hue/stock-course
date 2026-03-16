@@ -16,10 +16,13 @@ export const metadata: Metadata = {
 export default async function LessonPage({ params }: LessonPageProps) {
   const { lessonId } = await params;
 
-  if (lessonId !== "1" && lessonId !== "2") {
+  if (!["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"].includes(lessonId)) {
     notFound();
   }
 
-  return <LessonPlayerScreen lessonId={Number(lessonId) as 1 | 2} />;
+  return (
+    <LessonPlayerScreen
+      lessonId={Number(lessonId) as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10}
+    />
+  );
 }
-

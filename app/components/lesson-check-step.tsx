@@ -20,11 +20,12 @@ export function LessonCheckStep({
   );
   const [showFeedback, setShowFeedback] = useState(false);
   const content = checkContent[stepId] ?? checkContent["1-3"];
+  const multipleOptions = content.type === "multiple" ? content.options ?? [] : [];
 
   const isCorrect =
     content.type === "truefalse"
       ? selectedAnswer === content.correctAnswer
-      : !!content.options.find((option) => option.id === selectedAnswer)?.correct;
+      : !!content.options?.find((option) => option.id === selectedAnswer)?.correct;
 
   function handleSubmit() {
     setShowFeedback(true);
@@ -33,7 +34,7 @@ export function LessonCheckStep({
       if (content.type === "truefalse") {
         onIncorrect(content.reviewPrompt);
       } else {
-        const selected = content.options.find(
+        const selected = content.options?.find(
           (option) => option.id === selectedAnswer,
         );
         onIncorrect(selected?.reviewPrompt || content.reviewPrompt);
@@ -95,7 +96,7 @@ export function LessonCheckStep({
           </div>
         ) : (
           <div className="mb-6 space-y-3">
-            {content.options.map((option) => {
+            {multipleOptions.map((option) => {
               const isSelected = selectedAnswer === option.id;
               const showCorrectState = showFeedback && option.correct;
               const showIncorrectState = showFeedback && isSelected && !option.correct;
@@ -169,4 +170,3 @@ export function LessonCheckStep({
     </div>
   );
 }
-

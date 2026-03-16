@@ -95,14 +95,12 @@ export function CertificateScreen() {
                 has successfully completed
               </p>
               <h3 className="mb-8 text-3xl font-semibold text-foreground">
-                Stock Fundamentals: Understanding Stocks
+                Beginner Stock Foundations
               </h3>
 
               <div className="mx-auto mb-10 max-w-2xl">
                 <p className="leading-relaxed text-muted-foreground">
-                  This course covered essential concepts including stock
-                  ownership, share pricing, chart interpretation, and market
-                  dynamics using NVIDIA (NVDA) as a practical learning example.
+                  This course covered beginner-friendly concepts including ownership, fundraising, gains, dividends, exchanges, market cap, investing versus trading, risk, diversification, and chart exploration.
                 </p>
               </div>
 
@@ -112,9 +110,9 @@ export function CertificateScreen() {
                   value={completionDate}
                 />
                 <div className="hidden h-12 w-px bg-border sm:block" />
-                <CertificateDetail label="Completion Time" value="42 minutes" />
+                <CertificateDetail label="Completion Time" value="74 minutes" />
                 <div className="hidden h-12 w-px bg-border sm:block" />
-                <CertificateDetail label="Concepts Mastered" value="8 concepts" />
+                <CertificateDetail label="Lessons Finished" value="10 lessons" />
               </div>
 
               <div className="inline-block">
