@@ -34,6 +34,7 @@ export type LearnContent = {
   commonMistake: string;
   labMoment: string;
   supportActivities: string[];
+  panels?: LearnPanel[];
 };
 
 export type PracticeOption = {
@@ -41,6 +42,20 @@ export type PracticeOption = {
   text: string;
   correct: boolean;
   reviewPrompt: string;
+  feedback?: string;
+};
+
+export type LearnPanel = {
+  id: string;
+  title: string;
+  copy: string;
+  eyebrow?: string;
+  activityKind?: PracticeActivityKind;
+  activityData?: Record<string, unknown>;
+  activityStartValue?: number;
+  highlights?: string[];
+  noteLabel?: string;
+  note?: string;
 };
 
 export type PracticeActivityKind =
@@ -53,7 +68,17 @@ export type PracticeActivityKind =
   | "timeline"
   | "checklist"
   | "portfolio"
-  | "chart-lab";
+  | "chart-lab"
+  | "bucket-sort"
+  | "sequence-lab"
+  | "zone-map"
+  | "signal-stack"
+  | "business-builder"
+  | "market-cap-board"
+  | "ratio-builder"
+  | "reveal-card"
+  | "confidence-meter"
+  | "voice-ready";
 
 export type PracticeContent = {
   mechanicTitle: string;
@@ -64,6 +89,10 @@ export type PracticeContent = {
   explanation: string;
   activityKind: PracticeActivityKind;
   supportActivities: string[];
+  useActivityAsPractice?: boolean;
+  actionLabel?: string;
+  readinessLabel?: string;
+  activityData?: Record<string, unknown>;
 };
 
 export type CheckContent = {
