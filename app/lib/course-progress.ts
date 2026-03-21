@@ -5,7 +5,11 @@ import {
   defaultCourseProgress,
   type CourseProgressRecord,
 } from "./course-engine";
-import { syncCurrentUserProgressIfAuthenticated } from "./remote-progress";
+import {
+  isIgnorableRemoteProgressError,
+  serializeRemoteProgressError,
+  syncCurrentUserProgressIfAuthenticated,
+} from "./remote-progress";
 
 const courseProgressStorageKey = "premiumStockCourseMapProgress";
 const storageEventName = "premium-stock-course-map-storage";
@@ -37,11 +41,13 @@ function safeParseProgress(raw: string | null) {
 
   try {
     const parsed = JSON.parse(raw) as Partial<CourseProgressRecord>;
+    const completedLessonIds = Array.isArray(parsed.completedLessonIds)
+      ? [...new Set(parsed.completedLessonIds.filter(Boolean))]
+      : [];
+    const derivedXp = completedLessonIds.length * 10;
 
     return {
-      completedLessonIds: Array.isArray(parsed.completedLessonIds)
-        ? [...new Set(parsed.completedLessonIds.filter(Boolean))]
-        : [],
+      completedLessonIds,
       hearts:
         typeof parsed.hearts === "number"
           ? Math.max(0, Math.min(maxHearts, Math.floor(parsed.hearts)))
@@ -57,6 +63,7 @@ function safeParseProgress(raw: string | null) {
         typeof parsed.streakCount === "number"
           ? Math.max(1, Math.floor(parsed.streakCount))
           : 1,
+      totalXp: derivedXp,
     };
   } catch {
     return emptyProgressSnapshot;
@@ -146,7 +153,12 @@ export function saveStoredCourseProgress(
 
   if (!options?.skipRemoteSync) {
     void syncCurrentUserProgressIfAuthenticated(next).catch((error) => {
-      console.error("Failed to sync progress to Supabase", error);
+      if (!isIgnorableRemoteProgressError(error)) {
+        console.warn(
+          "Progress sync to Supabase failed. Local progress was kept.",
+          serializeRemoteProgressError(error),
+        );
+      }
     });
   }
 
@@ -179,6 +191,34 @@ export function refreshStoredHearts(isSignedIn: boolean) {
   };
 
   return saveStoredCourseProgress(updated);
+}
+
+export function refreshStoredHeartsLocally(isSignedIn: boolean) {
+  const progress = getStoredCourseProgress();
+
+  if (!isSignedIn || progress.hearts >= maxHearts || !progress.lastHeartRefillAt) {
+    return progress;
+  }
+
+  const refillStart = new Date(progress.lastHeartRefillAt).getTime();
+  const elapsed = Date.now() - refillStart;
+
+  if (elapsed < signedInHeartRegenMs) {
+    return progress;
+  }
+
+  const regenerated = Math.floor(elapsed / signedInHeartRegenMs);
+  const hearts = Math.min(maxHearts, progress.hearts + regenerated);
+  const updated: CourseProgressRecord = {
+    ...progress,
+    hearts,
+    lastHeartRefillAt:
+      hearts >= maxHearts
+        ? null
+        : new Date(refillStart + regenerated * signedInHeartRegenMs).toISOString(),
+  };
+
+  return saveStoredCourseProgress(updated, { skipRemoteSync: true });
 }
 
 export function spendHeart(isSignedIn: boolean) {
@@ -246,6 +286,7 @@ export function completeLesson(lessonId: string) {
     lastHeartRefillAt: progress.lastHeartRefillAt,
     lastStreakActiveOn: today,
     streakCount,
+    totalXp: progress.totalXp + 10,
   };
 
   return saveStoredCourseProgress(next);

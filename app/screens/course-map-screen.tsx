@@ -36,13 +36,13 @@ function StokedLogo() {
 type SidebarProps = {
   hearts: number;
   streak: number;
-  completedLessons: number;
+  totalXp: number;
 };
 
-function LeftSidebar({ hearts, streak, completedLessons }: SidebarProps) {
+function LeftSidebar({ hearts, streak, totalXp }: SidebarProps) {
   const navItems = [
     { label: "Learn",          icon: "📚", href: "/course",     active: true  },
-    { label: "Leaderboards",   icon: "🏆", href: "/course",     active: false },
+    { label: "Leaderboards",   icon: "🏆", href: "/leaderboard", active: false },
     { label: "Profile",        icon: "👤", href: "/profile",    active: false },
   ];
 
@@ -83,7 +83,7 @@ function LeftSidebar({ hearts, streak, completedLessons }: SidebarProps) {
         <div className="flex items-center gap-3 rounded-2xl border-2 border-gray-100 bg-white px-4 py-3 shadow-[0_3px_0_#e5e5e5]">
           <span className="text-2xl">⚡</span>
           <div>
-            <div className="text-lg font-black text-[#fbbf24]">{completedLessons * 10} XP</div>
+            <div className="text-lg font-black text-[#fbbf24]">{totalXp} XP</div>
             <div className="text-[10px] font-black uppercase tracking-wider text-gray-400">Total earned</div>
           </div>
         </div>
@@ -325,7 +325,7 @@ export function CourseMapScreen() {
         <LeftSidebar
           hearts={hearts}
           streak={courseState.streak}
-          completedLessons={courseState.completedLessons}
+          totalXp={courseState.totalXp}
         />
 
         {/* Center content */}

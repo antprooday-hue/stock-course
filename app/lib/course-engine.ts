@@ -14,6 +14,7 @@ export type CourseProgressRecord = {
   lastStreakActiveOn: string | null;
   seededDemo: boolean;
   streakCount: number;
+  totalXp: number;
 };
 
 export type DerivedLesson = CourseLesson & {
@@ -36,6 +37,7 @@ export const defaultCourseProgress: CourseProgressRecord = {
   lastStreakActiveOn: null,
   seededDemo: false,
   streakCount: 1,
+  totalXp: 0,
 };
 
 export function createDemoCourseProgress(): CourseProgressRecord {
@@ -52,6 +54,7 @@ export function createDemoCourseProgress(): CourseProgressRecord {
     lastStreakActiveOn: new Date().toISOString().slice(0, 10),
     seededDemo: true,
     streakCount: 5,
+    totalXp: completedLessonIds.length * 10,
   };
 }
 
@@ -161,6 +164,7 @@ export function deriveCourseState(progress: CourseProgressRecord) {
     completionPercent,
     unlockedModules,
     streak,
+    totalXp: progress.totalXp,
     rank,
     lastOpenedLessonId: progress.lastOpenedLessonId,
     allLessonsCompleted: completedLessons === courseLessonCount,

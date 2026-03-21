@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Cormorant_Garamond, DM_Serif_Display, DM_Sans } from "next/font/google";
 import { AppProviders } from "./components/app-providers";
 import "./globals.css";
@@ -38,6 +40,8 @@ export default function RootLayout({
     <html lang="en" className={`${cormorantGaramond.variable} ${dmSerifDisplay.variable} ${dmSans.variable}`}>
       <body>
         <AppProviders>{children}</AppProviders>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

@@ -14,7 +14,7 @@ import {
   getNickname,
 } from "./course-storage";
 import {
-  refreshStoredHearts,
+  refreshStoredHeartsLocally,
   getStoredCourseProgress,
   saveStoredCourseProgress,
 } from "./course-progress";
@@ -63,6 +63,20 @@ function waitFor<T>(promise: Promise<T>, timeoutMs: number) {
   ]);
 }
 
+function isSupabaseLockInterruption(error: unknown) {
+  const message = error instanceof Error
+    ? error.message
+    : typeof error === "object" && error !== null && "message" in error
+      ? String((error as { message?: unknown }).message)
+      : String(error);
+
+  return (
+    message.includes("another request stole it") ||
+    message.includes("NavigatorLockAcquireTimeoutError") ||
+    message.includes("LockManager")
+  );
+}
+
 async function mergeRemoteProgressForUser(user: User) {
   const remoteRow = await loadRemoteProgress(user.id);
   const remoteProgress = remoteRowToCourseProgress(remoteRow);
@@ -89,6 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [didHydrateSession, setDidHydrateSession] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -105,18 +120,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (nextSession?.user) {
           try {
             await mergeRemoteProgressForUser(nextSession.user);
-            refreshStoredHearts(true);
+            refreshStoredHeartsLocally(true);
           } catch (error) {
-            console.error("Failed to sync remote progress on init", error);
+            if (!isSupabaseLockInterruption(error)) {
+              console.warn("Remote progress sync was skipped during init.", error);
+            }
           }
         }
 
         setLoading(false);
+        setDidHydrateSession(true);
       })
       .catch((error) => {
         console.error("Failed to load Supabase session", error);
         if (active) {
           setLoading(false);
+          setDidHydrateSession(true);
         }
       });
 
@@ -127,14 +146,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
+      if (!didHydrateSession) {
+        return;
+      }
+
       setSession(nextSession);
 
       if (nextSession?.user) {
         try {
           await mergeRemoteProgressForUser(nextSession.user);
-          refreshStoredHearts(true);
+          refreshStoredHeartsLocally(true);
         } catch (error) {
-          console.error("Failed to sync remote progress on auth change", error);
+          if (!isSupabaseLockInterruption(error)) {
+            console.warn("Remote progress sync was skipped during auth change.", error);
+          }
         }
       }
     });
@@ -143,7 +168,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       active = false;
       subscription.unsubscribe();
     };
-  }, [supabase]);
+  }, [didHydrateSession, supabase]);
 
   useEffect(() => {
     const currentUser = session?.user ?? null;
@@ -165,11 +190,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         (payload) => {
           const row = mapRealtimePayloadToRow(payload);
           const remoteProgress = remoteRowToCourseProgress(row);
+          const localProgress = getStoredCourseProgress();
 
           applyRemoteIdentityDefaults(currentUser, row);
 
           if (remoteProgress) {
-            saveStoredCourseProgress(remoteProgress, { skipRemoteSync: true });
+            const mergedProgress = mergeCourseProgress(localProgress, remoteProgress);
+
+            if (!courseProgressEquals(localProgress, mergedProgress)) {
+              saveStoredCourseProgress(mergedProgress, { skipRemoteSync: true });
+            }
           }
         },
       )
