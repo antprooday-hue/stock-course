@@ -398,10 +398,12 @@ export function LandingScreen() {
       </header>
 
       {/* ── HERO ─────────────────────────────────────────────── */}
-      <section style={{ minHeight: "calc(100vh - 64px)", display: "flex", alignItems: "center", background: "#f0fdf4", borderBottom: "2px solid #dcfce7" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "72px 24px 80px", width: "100%", display: "flex", alignItems: "center", gap: 64, flexWrap: "wrap", justifyContent: "center" }}>
-          {/* Left text */}
-          <div style={{ flex: "1 1 340px", minWidth: 0 }}>
+      {/* overflow:hidden on section prevents scroll from orbiting icons      */}
+      {/* maxWidth raised to 1440 so right column gets real estate            */}
+      <section style={{ minHeight: "calc(100vh - 64px)", display: "flex", alignItems: "center", background: "#f0fdf4", borderBottom: "2px solid #dcfce7", overflow: "hidden" }}>
+        <div style={{ maxWidth: 1600, margin: "0 auto", padding: "60px 0 60px 40px", width: "100%", display: "flex", alignItems: "center", gap: 0, flexWrap: "wrap", justifyContent: "center" }}>
+          {/* Left text — fixed width so it doesn't shrink into the scene */}
+          <div style={{ flex: "0 1 420px", minWidth: 280 }}>
             <h1 style={{
               fontFamily: font,
               fontWeight: 900,
@@ -455,22 +457,23 @@ export function LandingScreen() {
                 </>
               )}
             </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 24, marginTop: 36 }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 16, marginTop: 36, alignItems: "baseline" }}>
               {[
                 { val: "10", sub: "Modules" },
                 { val: "100+", sub: "Lessons" },
                 { val: "Free", sub: "Always" },
                 { val: "5 min", sub: "Per day" },
               ].map(s => (
-                <div key={s.sub}>
+                <div key={s.sub} style={{ whiteSpace: "nowrap" }}>
                   <span style={{ fontWeight: 900, fontSize: 20, color: "#172b4d" }}>{s.val}</span>
-                  <span style={{ fontWeight: 600, fontSize: 14, color: "#6b7280", marginLeft: 6 }}>{s.sub}</span>
+                  <span style={{ fontWeight: 600, fontSize: 14, color: "#6b7280", marginLeft: 5 }}>{s.sub}</span>
                 </div>
               ))}
             </div>
           </div>
-          {/* Right 3D scene */}
-          <div style={{ flex: "1 1 420px", minHeight: 560, alignSelf: "stretch", display: "flex" }}>
+          {/* Right — 3D hero scene: takes all remaining width, tall fixed height */}
+          {/* overflow:visible so orbiting sprites aren't clipped by the column */}
+          <div style={{ flex: "1 1 660px", height: "min(740px, calc(100vh - 100px))", minHeight: 600, position: "relative", overflow: "visible" }}>
             <HeroScene width="100%" height="100%" />
           </div>
         </div>

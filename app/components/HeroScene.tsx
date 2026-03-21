@@ -2,547 +2,145 @@
 
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
-// ─── Geometry helpers ─────────────────────────────────────────────────────────
-const b = (w: number, h: number, d: number, m: THREE.Material) =>
-  new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m);
-const c = (rt: number, rb: number, h: number, seg: number, m: THREE.Material) =>
-  new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, seg), m);
-const s = (r: number, ws: number, hs: number, m: THREE.Material) =>
-  new THREE.Mesh(new THREE.SphereGeometry(r, ws, hs), m);
-const mat = (
-  color: number,
-  rough = 0.45,
-  metal = 0.0,
-  emissive = 0x000000,
-  ei = 0.0
-) =>
-  new THREE.MeshStandardMaterial({
-    color,
-    roughness: rough,
-    metalness: metal,
-    emissive,
-    emissiveIntensity: ei,
-  });
-
-
-// ─── Icon: book + chart + magnifier ──────────────────────────────────────────
-function makeChartIcon(): THREE.Group {
-  const g = new THREE.Group();
-  const blue   = mat(0x1e3a8a, 0.4, 0.3);
-  const white  = mat(0xf0f9ff, 0.3);
-  const green  = mat(0x22c55e, 0.3, 0.0, 0x22c55e, 0.25);
-  const lgreen = mat(0x86efac, 0.3, 0.0, 0x86efac, 0.15);
-  const navy   = mat(0x172b4d, 0.4, 0.3);
-
-  // Book body
-  const book = b(1.2, 0.9, 0.14, blue);
-  book.castShadow = true;
-  g.add(book);
-  // Book spine
-  const spine = b(0.06, 0.9, 0.14, navy);
-  spine.position.x = -0.57;
-  g.add(spine);
-  // Pages
-  const pages = b(1.0, 0.74, 0.09, white);
-  pages.position.z = 0.08;
-  g.add(pages);
-  // Page lines
-  for (let i = 0; i < 4; i++) {
-    const line = b(0.5, 0.03, 0.05, mat(0xd1d5db, 0.7));
-    line.position.set(-0.18, 0.22 - i * 0.13, 0.12);
-    g.add(line);
-  }
-  // Chart bars
-  const hs = [0.22, 0.40, 0.30, 0.54];
-  const ms = [lgreen, green, green, green];
-  for (let i = 0; i < 4; i++) {
-    const bar = b(0.12, hs[i], 0.1, ms[i]);
-    bar.position.set(-0.24 + i * 0.17, -0.08 + hs[i]/2, 0.12);
-    g.add(bar);
-  }
-  // Trend arrow
-  const shaft = b(0.56, 0.045, 0.08, mat(0x16a34a, 0.3, 0, 0x22c55e, 0.4));
-  shaft.rotation.z = -0.44;
-  shaft.position.set(-0.04, 0.28, 0.12);
-  g.add(shaft);
-  const tip = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.18, 5), mat(0x22c55e, 0.2, 0, 0x22c55e, 0.5));
-  tip.rotation.z = Math.PI / 2 - 0.44;
-  tip.position.set(0.27, 0.38, 0.12);
-  g.add(tip);
-  // Magnifier
-  const lens = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.06, 10, 22), mat(0x172b4d, 0.3, 0.5));
-  lens.position.set(0.42, -0.22, 0.18);
-  g.add(lens);
-  const glass = s(0.23, 12, 10, mat(0x93c5fd, 0.1, 0, 0x3b82f6, 0.4));
-  glass.position.copy(lens.position);
-  g.add(glass);
-  const handle = b(0.09, 0.38, 0.09, navy);
-  handle.position.set(0.61, -0.43, 0.18);
-  handle.rotation.z = -0.6;
-  g.add(handle);
-  return g;
-}
-
-// ─── Icon: rocket ─────────────────────────────────────────────────────────────
-function makeRocketIcon(): THREE.Group {
-  const g = new THREE.Group();
-  const white  = mat(0xffffff, 0.18, 0.25);
-  const navy   = mat(0x1e3a8a, 0.28, 0.45);
-  const green  = mat(0x22c55e, 0.28, 0.1, 0x22c55e, 0.2);
-  const blue   = mat(0x60a5fa, 0.08, 0.0, 0x3b82f6, 0.55);
-  const stripe = mat(0x93c5fd, 0.15, 0.2, 0x60a5fa, 0.3);
-  const flame  = mat(0xfbbf24, 0.1, 0, 0xfbbf24, 0.9);
-  const fcore  = mat(0xfef3c7, 0.05, 0, 0xffffff, 1.0);
-
-  // Body segments (two-tone white/blue stripe pattern)
-  const body = c(0.24, 0.24, 0.82, 14, white);
-  body.castShadow = true; g.add(body);
-  const band = c(0.245, 0.245, 0.12, 14, stripe);
-  band.position.y = 0.22; g.add(band);
-  const band2 = c(0.245, 0.245, 0.07, 14, navy);
-  band2.position.y = -0.12; g.add(band2);
-
-  // Nose
-  const nose = new THREE.Mesh(new THREE.ConeGeometry(0.24, 0.52, 14), navy);
-  nose.position.y = 0.67; g.add(nose);
-  // Nose tip (green)
-  const ntip = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.14, 8), green);
-  ntip.position.y = 0.97; g.add(ntip);
-
-  // Porthole
-  const pw = s(0.13, 12, 10, blue);
-  pw.position.set(0, 0.16, 0.22); g.add(pw);
-  const pr = new THREE.Mesh(new THREE.TorusGeometry(0.13, 0.03, 8, 16), navy);
-  pr.position.copy(pw.position); pr.rotation.y = Math.PI / 2; g.add(pr);
-
-  // Fins (green, one per side)
-  for (let side = 0; side < 2; side++) {
-    const fin = b(0.38, 0.32, 0.07, green);
-    fin.position.set(side === 0 ? -0.3 : 0.3, -0.34, 0);
-    fin.rotation.z = side === 0 ? 0.52 : -0.52;
-    fin.castShadow = true; g.add(fin);
-  }
-
-  // Flames (layered)
-  const f1 = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.42, 10), flame);
-  f1.rotation.x = Math.PI; f1.position.y = -0.62; g.add(f1);
-  const f2 = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.26, 8), fcore);
-  f2.rotation.x = Math.PI; f2.position.y = -0.58; g.add(f2);
-  const f3 = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.14, 6), mat(0xfef9c3, 0.05, 0, 0xffffff, 1));
-  f3.rotation.x = Math.PI; f3.position.y = -0.54; g.add(f3);
-
-  g.rotation.z = -0.22;
-  g.rotation.x = 0.08;
-  return g;
-}
-
-// ─── Icon: dashboard monitor ──────────────────────────────────────────────────
-function makeDashboardIcon(): THREE.Group {
-  const g = new THREE.Group();
-  const frame  = mat(0x172b4d, 0.4, 0.5);
-  const screen = mat(0x0f1a2e, 0.18, 0, 0x1e40af, 0.45);
-  const G      = mat(0x22c55e, 0.25, 0, 0x22c55e, 0.45);
-  const Y      = mat(0xfbbf24, 0.18, 0.2, 0xfbbf24, 0.45);
-  const C      = mat(0x06b6d4, 0.18, 0, 0x06b6d4, 0.45);
-
-  // Monitor body
-  const body = b(1.12, 0.88, 0.14, frame);
-  body.castShadow = true; g.add(body);
-  // Screen
-  const sc = b(0.94, 0.70, 0.09, screen);
-  sc.position.z = 0.08; g.add(sc);
-
-  // Chart bars on screen
-  const bd = [
-    { x: -0.3,  h: 0.20, m: G },
-    { x: -0.12, h: 0.30, m: C },
-    { x:  0.06, h: 0.14, m: Y },
-    { x:  0.24, h: 0.36, m: G },
-  ];
-  for (const d of bd) {
-    const bar = b(0.11, d.h, 0.1, d.m);
-    bar.position.set(d.x, -0.13 + d.h/2, 0.12); g.add(bar);
-  }
-
-  // Dot line on screen
-  const dotPts = [[-0.3, 0.17], [-0.12, 0.24], [0.06, 0.20], [0.24, 0.30]];
-  for (const [x, y] of dotPts) {
-    const dot = s(0.038, 6, 5, Y);
-    dot.position.set(x, y, 0.12); g.add(dot);
-  }
-
-  // Title bar
-  const title = b(0.6, 0.06, 0.08, mat(0x60a5fa, 0.3, 0, 0x93c5fd, 0.4));
-  title.position.set(-0.15, 0.28, 0.12); g.add(title);
-
-  // Traffic lights
-  for (const [i, col] of [[0, 0xef4444], [1, 0xfbbf24], [2, 0x22c55e]] as [number, number][]) {
-    const dot = s(0.038, 6, 5, mat(col, 0.3, 0, col, 0.5));
-    dot.position.set(0.32 - i * 0.07, 0.29, 0.12); g.add(dot);
-  }
-
-  // Stand + base
-  const stand = b(0.1, 0.32, 0.1, frame);
-  stand.position.set(0, -0.6, 0); g.add(stand);
-  const base = b(0.48, 0.07, 0.16, frame);
-  base.position.set(0, -0.77, 0); g.add(base);
-
-  return g;
-}
-
-// ─── Icon: cute bull mascot ───────────────────────────────────────────────────
-function makeBullIcon(): THREE.Group {
-  const g = new THREE.Group();
-  const G   = mat(0x22c55e, 0.5);
-  const LG  = mat(0x4ade80, 0.4);
-  const NK  = mat(0x172b4d, 0.5, 0.2);
-  const EW  = mat(0xffffff, 0.4);
-  const EB  = mat(0x1d4ed8, 0.1, 0, 0x3b82f6, 0.55);
-  const PUP = mat(0x172b4d, 0.8);
-  const CHK = mat(0xfca5a5, 0.6, 0, 0xf87171, 0.15);
-  const ARR = mat(0x22c55e, 0.2, 0, 0x22c55e, 0.55);
-  const GLD = mat(0xfbbf24, 0.15, 0.5, 0xfbbf24, 0.25);
-  const NOS = mat(0xfda4af, 0.6);
-
-  // Body — plump sphere
-  const bodyGeo = new THREE.SphereGeometry(0.42, 18, 14);
-  bodyGeo.scale(1, 0.92, 0.88);
-  const body = new THREE.Mesh(bodyGeo, G);
-  body.castShadow = true; g.add(body);
-
-  // Belly (lighter green)
-  const belGeo = new THREE.SphereGeometry(0.28, 14, 12);
-  belGeo.scale(1, 0.85, 0.62);
-  const bel = new THREE.Mesh(belGeo, LG);
-  bel.position.set(0.06, -0.04, 0.25); g.add(bel);
-
-  // Head — big and round (cute ratio)
-  const hdGeo = new THREE.SphereGeometry(0.32, 18, 14);
-  hdGeo.scale(1, 1.06, 0.94);
-  const head = new THREE.Mesh(hdGeo, G);
-  head.position.set(0.36, 0.22, 0); g.add(head);
-
-  // Ears
-  for (const zS of [1, -1]) {
-    const earGeo = new THREE.SphereGeometry(0.12, 10, 8);
-    earGeo.scale(0.65, 1, 0.5);
-    const ear = new THREE.Mesh(earGeo, G);
-    ear.position.set(0.3, 0.48, zS * 0.28); g.add(ear);
-    const innerEar = new THREE.Mesh(earGeo, LG);
-    innerEar.scale.set(0.55, 0.7, 0.4);
-    innerEar.position.copy(ear.position);
-    g.add(innerEar);
-  }
-
-  // Snout — green
-  const snGeo = new THREE.SphereGeometry(0.19, 14, 12);
-  snGeo.scale(1, 0.72, 0.9);
-  const sn = new THREE.Mesh(snGeo, LG);
-  sn.position.set(0.62, 0.2, 0); g.add(sn);
-
-  // Nostrils
-  for (const zS of [1, -1]) {
-    const nos = s(0.042, 6, 5, NOS);
-    nos.position.set(0.78, 0.18, zS * 0.08); g.add(nos);
-  }
-
-  // Cheek blush
-  for (const zS of [1, -1]) {
-    const chkGeo = new THREE.SphereGeometry(0.09, 8, 7);
-    chkGeo.scale(1, 0.55, 0.4);
-    const chk = new THREE.Mesh(chkGeo, CHK);
-    chk.position.set(0.59, 0.2, zS * 0.23); g.add(chk);
-  }
-
-  // Eyes — big cartoon eyes
-  for (const zS of [1, -1]) {
-    const eyeG = new THREE.Group();
-    eyeG.position.set(0.52, 0.34, zS * 0.22);
-    const ew = s(0.115, 12, 10, EW); eyeG.add(ew);
-    const iris = s(0.086, 10, 8, EB);
-    iris.position.z = zS * 0.03; eyeG.add(iris);
-    const pup = s(0.054, 8, 7, PUP);
-    pup.position.z = zS * 0.07; eyeG.add(pup);
-    const shine = s(0.026, 6, 5, EW);
-    shine.position.set(0.04, 0.04, zS * 0.1); eyeG.add(shine);
-    g.add(eyeG);
-  }
-
-  // Horns (dark blue)
-  for (const zS of [1, -1]) {
-    const hornGeo = new THREE.CylinderGeometry(0.028, 0.075, 0.34, 8);
-    const horn = new THREE.Mesh(hornGeo, NK);
-    horn.position.set(0.32, 0.56, zS * 0.18);
-    horn.rotation.z = 0.52;
-    horn.rotation.x = zS * -0.38;
-    g.add(horn);
-  }
-
-  // Legs — short, dark hooves
-  for (const [lx, lz] of [[0.16, 0.2], [0.16, -0.2], [-0.18, 0.2], [-0.18, -0.2]]) {
-    const leg = c(0.08, 0.07, 0.32, 8, G);
-    leg.position.set(lx, -0.54, lz); g.add(leg);
-    const hoof = s(0.09, 8, 7, NK);
-    hoof.scale.set(1, 0.65, 1);
-    hoof.position.set(lx, -0.73, lz); g.add(hoof);
-  }
-
-  // Tail (torus arc)
-  const tailG = new THREE.TorusGeometry(0.2, 0.045, 7, 12, Math.PI * 0.85);
-  const tail = new THREE.Mesh(tailG, G);
-  tail.position.set(-0.38, 0.06, 0);
-  tail.rotation.y = Math.PI / 2; g.add(tail);
-
-  // Up-arrow badge
-  const arrG = new THREE.Group();
-  arrG.position.set(0.08, 0.68, 0.3);
-  arrG.add(b(0.08, 0.3, 0.08, ARR));
-  const aHead = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.18, 5), ARR);
-  aHead.position.y = 0.24; arrG.add(aHead);
-  g.add(arrG);
-
-  // Gold coins at feet
-  for (let ci = 0; ci < 3; ci++) {
-    const coin = c(0.11, 0.11, 0.045, 14, GLD);
-    coin.position.set(-0.1 + ci * 0.15, -0.8, 0.08 + ci * 0.04);
-    coin.rotation.z = 0.3 + ci * 0.35;
-    g.add(coin);
-    const rim = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.018, 6, 14),
-      mat(0xd97706, 0.2, 0.45));
-    rim.position.copy(coin.position);
-    rim.rotation.x = Math.PI / 2; rim.rotation.z = coin.rotation.z; g.add(rim);
-  }
-
-  return g;
-}
-
-// ─── Icon: money bag ──────────────────────────────────────────────────────────
-function makeMoneyBagIcon(): THREE.Group {
-  const g = new THREE.Group();
-  const bag  = mat(0x1e3a8a, 0.5, 0.25);
-  const dark = mat(0x0f172a, 0.6, 0.3);
-  const gold = mat(0xfbbf24, 0.12, 0.55, 0xfbbf24, 0.28);
-  const dg   = mat(0xd97706, 0.2, 0.45);
-  const gs   = mat(0x4ade80, 0.18, 0, 0x22c55e, 0.65);
-  const star = mat(0xfbbf24, 0.05, 0.3, 0xfbbf24, 1.0);
-
-  // Main bag body
-  const bgGeo = new THREE.SphereGeometry(0.42, 18, 16);
-  bgGeo.scale(1.0, 1.22, 0.92);
-  const bagMesh = new THREE.Mesh(bgGeo, bag);
-  bagMesh.castShadow = true; g.add(bagMesh);
-
-  // Neck
-  const neck = c(0.14, 0.20, 0.26, 12, dark);
-  neck.position.y = 0.56; g.add(neck);
-
-  // Gold knot ring
-  const knot = new THREE.Mesh(new THREE.TorusGeometry(0.14, 0.06, 10, 20), gold);
-  knot.position.y = 0.63; knot.rotation.x = Math.PI / 2; g.add(knot);
-
-  // $ sign (green, large)
-  g.add(b(0.06, 0.48, 0.1, gs)).position.set(0, 0, 0.38);
-  for (const [yO, xO] of [[0.12, 0.01], [0.0, 0], [-0.12, -0.01]] as [number, number][]) {
-    const hbar = b(0.3, 0.065, 0.1, gs);
-    hbar.position.set(xO, yO, 0.38); g.add(hbar);
-  }
-  // S-curve wings
-  for (const [xO, yO] of [[0.12, 0.13], [-0.12, -0.13]] as [number, number][]) {
-    const wing = b(0.16, 0.055, 0.09, gs);
-    wing.position.set(xO, yO, 0.38); g.add(wing);
-  }
-
-  // Spilling coins (5 around base)
-  const cPositions = [
-    [-0.35, -0.6, 0.25], [0, -0.68, 0.22], [0.35, -0.6, 0.20],
-    [-0.5, -0.6, -0.06], [0.5, -0.58, 0.08],
-  ];
-  for (const [cx, cy, cz] of cPositions) {
-    const coin = c(0.15, 0.15, 0.05, 18, gold);
-    coin.position.set(cx, cy, cz);
-    coin.rotation.z = Math.random() * 0.7 - 0.35;
-    g.add(coin);
-    const rim = new THREE.Mesh(new THREE.TorusGeometry(0.15, 0.02, 7, 18), dg);
-    rim.position.copy(coin.position);
-    rim.rotation.x = Math.PI / 2; rim.rotation.z = coin.rotation.z; g.add(rim);
-  }
-
-  // Sparkle stars (4-pointed)
-  const starPositions = [[-0.6, 0.35], [0.6, 0.5], [-0.45, -0.1], [0.7, 0.0]];
-  for (const [sx, sy] of starPositions) {
-    const starMesh = new THREE.Mesh(new THREE.OctahedronGeometry(0.07, 0), star);
-    starMesh.position.set(sx, sy, 0.15);
-    starMesh.userData.sparkle = true;
-    g.add(starMesh);
-  }
-
-  return g;
-}
-
-// ─── Icon: gold coin stack ────────────────────────────────────────────────────
-function makeCoinStackIcon(): THREE.Group {
-  const g = new THREE.Group();
-  const gold = mat(0xfbbf24, 0.12, 0.58, 0xfbbf24, 0.22);
-  const dg   = mat(0xd97706, 0.2, 0.48);
-  const sh   = mat(0xfef08a, 0.04, 0.72, 0xfef9c3, 0.55);
-  const star = mat(0xfbbf24, 0.05, 0.3, 0xfbbf24, 1.0);
-
-  for (let i = 0; i < 7; i++) {
-    const coin = c(0.30, 0.30, 0.08, 22, gold);
-    coin.position.y = i * 0.11;
-    coin.castShadow = true; g.add(coin);
-    const rim = new THREE.Mesh(new THREE.TorusGeometry(0.30, 0.025, 8, 22), dg);
-    rim.position.y = i * 0.11; rim.rotation.x = Math.PI / 2; g.add(rim);
-    // $ on top coin
-    if (i === 6) {
-      const dv = b(0.038, 0.26, 0.055, sh);
-      dv.position.set(0, i * 0.11 + 0.055, 0); g.add(dv);
-      for (const yO of [0.085, -0.005]) {
-        const dh = b(0.16, 0.038, 0.055, sh);
-        dh.position.set(0, i * 0.11 + 0.055 + yO, 0); g.add(dh);
-      }
-    }
-  }
-
-  // Sparkles above stack
-  for (const [sx, sy] of [[-0.55, 0.85], [0, 1.05], [0.6, 0.8]]) {
-    const starMesh = new THREE.Mesh(new THREE.OctahedronGeometry(0.08, 0), star);
-    starMesh.position.set(sx, sy, 0.05);
-    starMesh.userData.sparkle = true; g.add(starMesh);
-  }
-
-  return g;
-}
-
-// ─── Laptop with screen texture ────────────────────────────────────────────────
-function makeLaptop(screenTex: THREE.Texture): THREE.Group {
-  const laptop = new THREE.Group();
-  const chassis = mat(0x1e293b, 0.32, 0.72);
-  const inner   = mat(0x0f172a, 0.5, 0.5);
-  const key     = mat(0x1a3050, 0.62, 0.28);
-  const track   = mat(0x1e3a5f, 0.24, 0.52);
-
-  // ── Base ──────────────────────────────────────────────────────────────────
-  const base = b(4.2, 0.18, 3.0, chassis);
-  base.castShadow = true; laptop.add(base);
-
-  const kbSurf = b(3.7, 0.025, 2.2, inner);
-  kbSurf.position.set(0, 0.1, 0.1); laptop.add(kbSurf);
-
-  // Key rows
-  for (let row = 0; row < 4; row++) {
-    for (let col = 0; col < 14; col++) {
-      const k = b(0.21, 0.048, 0.2, key);
-      k.position.set(-1.43 + col * 0.22, 0.12, -0.6 + row * 0.25);
-      laptop.add(k);
-    }
-  }
-  const sp = b(1.1, 0.048, 0.2, key);
-  sp.position.set(0, 0.12, 0.6); laptop.add(sp);
-  const tp = b(1.3, 0.025, 0.88, track);
-  tp.position.set(0, 0.1, 1.0); laptop.add(tp);
-
-  // ── Lid ───────────────────────────────────────────────────────────────────
-  const lidG = new THREE.Group();
-  lidG.position.set(0, 0.09, -1.5);
-  laptop.add(lidG);
-
-  const lid = b(4.2, 0.16, 2.95, chassis);
-  lid.position.set(0, 0, 1.475); lid.castShadow = true; lidG.add(lid);
-
-  const bezel = b(3.9, 0.09, 2.65, inner);
-  bezel.position.set(0, 0.13, 1.475); lidG.add(bezel);
-
-  // ── Screen — self-luminous PlaneGeometry with canvas texture ────────────────
-  // MeshBasicMaterial = unaffected by scene lighting → always full brightness
-  // PlaneGeometry explicitly faces the viewer; BoxGeometry faces were unreliable
-  const screenMat = new THREE.MeshBasicMaterial({ map: screenTex, side: THREE.DoubleSide });
-
-  const screen = new THREE.Mesh(new THREE.PlaneGeometry(3.56, 2.28), screenMat);
-  // PlaneGeometry default normal = +Z. Rotating +90° around X maps it to -Y in lidG space.
-  // After lidG.rotation.x = -PI*0.585 (~105° open), that -Y local normal becomes
-  // (0, +0.26, +0.97) in world space — pointing toward the camera. ✓
-  screen.rotation.x = Math.PI / 2;
-  // Sit the screen on the inner surface of the lid
-  screen.position.set(0, 0.15, 1.46);
-  lidG.add(screen);
-
-  // Thin glare plane — very subtle, no tinting
-  const glowGeo = new THREE.PlaneGeometry(3.3, 2.1);
-  const glowMat = new THREE.MeshBasicMaterial({
-    color: 0xffffff,
-    transparent: true,
-    opacity: 0.03,
-    depthWrite: false,
-  });
-  const glow = new THREE.Mesh(glowGeo, glowMat);
-  glow.position.set(0, 0.15, 1.48); lidG.add(glow);
-
-  // Screen backlight — warm white, like an LCD panel
-  const screenLight = new THREE.PointLight(0xfef9f0, 3.5, 7);
-  screenLight.position.set(0, 0.2, 1.5); lidG.add(screenLight);
-
-  // Green dot accent light (subtle)
-  const dotLight = new THREE.PointLight(0x22c55e, 1.8, 4);
-  dotLight.position.set(0.6, 0.18, 1.52); lidG.add(dotLight);
-
-  // Back logo
-  const logoMat = mat(0x22c55e, 0.22, 0.12, 0x22c55e, 0.38);
-  const logoDot = s(0.26, 14, 12, logoMat);
-  logoDot.scale.set(1, 1, 0.18);
-  logoDot.position.set(0, 0.04, -0.04); lidG.add(logoDot);
-
-  lidG.rotation.x = -Math.PI * 0.585;
-  return laptop;
-}
-
-// ─── Icon entry ────────────────────────────────────────────────────────────────
-type IconEntry = {
-  group: THREE.Group;
-  orbitR: number;       // orbit radius
-  orbitY: number;       // vertical center of orbit
-  orbitTilt: number;    // orbit plane tilt (radians)
-  orbitAngle: number;   // current angle
-  orbitSpeed: number;   // radians per second
+// ─── Orbit icon config ─────────────────────────────────────────────────────────
+// Each icon orbits the scene center in a flattened ellipse.
+// Depth illusion comes from Three.js perspective projection:
+// icons behind the laptop are physically farther from camera → appear smaller.
+//
+// Tunable values:
+//   src          PNG asset path (in /public)
+//   spriteSize   world-unit size of the sprite billboard
+//   orbitR       orbit radius (world units from scene centre)
+//   orbitY       vertical centre height of this icon's orbit
+//   orbitTilt    how much the orbit plane tilts (higher → more vertical bob)
+//   orbitAngle   starting angle in radians
+//   orbitSpeed   radians/sec (positive = clockwise viewed from above)
+//   bobAmp/Speed additional sinusoidal vertical float
+//   bobPhase     phase offset so icons don't bob in sync
+//   baseScale    group scale multiplier
+//   wobbleAmp    billboard Z-tilt oscillation amplitude (radians)
+//   wobbleSpeed  billboard Z-tilt oscillation frequency
+//   glowColor    PointLight hex colour
+//   glowIntens   PointLight base intensity
+interface IconCfg {
+  src: string;
+  spriteSize: number;
+  orbitR: number;
+  orbitY: number;
+  orbitTilt: number;
+  orbitAngle: number;
+  orbitSpeed: number;
   bobAmp: number;
   bobSpeed: number;
   bobPhase: number;
   baseScale: number;
-  currentScale: number;
-  idleRotSpeed: THREE.Vector3;
-  pointLight: THREE.PointLight;
-};
+  wobbleAmp: number;
+  wobbleSpeed: number;
+  glowColor: number;
+  glowIntens: number;
+}
+
+// ─── Orbit ring radii: 3.8 / 4.3 / 4.8 / 5.1 / 5.5  (0.3–0.5 wu apart) ──────
+// Assigning each icon its own ring means they can never fully overlap —
+// minimum separation between adjacent rings is always > 0.
+// Mixed CW (+) / CCW (−) speeds prevent the group from locking into sync.
+// Phase angles are spread across [0, 2π] to distribute starting positions.
+const ICON_CONFIGS: IconCfg[] = [
+  // Book/analysis — innermost ring, counter-clockwise, upper area
+  {
+    src: "/hero-icons/icon_book_analysis.png",
+    spriteSize: 2.0,
+    orbitR: 3.8, orbitY: 2.2, orbitTilt: 0.28, orbitAngle: 2.0,
+    orbitSpeed: -0.18,                 // CCW — opposite to most others
+    bobAmp: 0.22, bobSpeed: 1.10, bobPhase: 0.0,
+    baseScale: 0.95, wobbleAmp: 0.14, wobbleSpeed: 0.9,
+    glowColor: 0x3b82f6, glowIntens: 2.6,
+  },
+  // Rocket — outermost ring, clockwise, starts upper-right
+  {
+    src: "/hero-icons/icon_rocket.png",
+    spriteSize: 2.5,
+    orbitR: 5.5, orbitY: 2.8, orbitTilt: 0.15, orbitAngle: 5.5,
+    orbitSpeed: 0.21,
+    bobAmp: 0.30, bobSpeed: 0.85, bobPhase: 1.7,
+    baseScale: 1.10, wobbleAmp: 0.18, wobbleSpeed: 0.75,
+    glowColor: 0xfbbf24, glowIntens: 3.0,
+  },
+  // Happy bull — mid ring, clockwise, starts lower-right
+  {
+    src: "/hero-icons/icon_happybull.png",
+    spriteSize: 2.7,
+    orbitR: 4.8, orbitY: 0.3, orbitTilt: 0.38, orbitAngle: 3.9,
+    orbitSpeed: 0.27,
+    bobAmp: 0.28, bobSpeed: 0.95, bobPhase: 3.2,
+    baseScale: 1.05, wobbleAmp: 0.12, wobbleSpeed: 1.1,
+    glowColor: 0x22c55e, glowIntens: 2.8,
+  },
+  // Money bag — inner-mid ring, counter-clockwise, starts right side
+  {
+    src: "/hero-icons/icon_money_bag.png",
+    spriteSize: 2.2,
+    orbitR: 4.3, orbitY: 1.1, orbitTilt: 0.32, orbitAngle: 0.8,
+    orbitSpeed: -0.23,                 // CCW
+    bobAmp: 0.24, bobSpeed: 1.05, bobPhase: 4.8,
+    baseScale: 0.90, wobbleAmp: 0.10, wobbleSpeed: 1.3,
+    glowColor: 0xfbbf24, glowIntens: 2.8,
+  },
+  // Charging bull — second-outer ring, slow clockwise, starts upper-left
+  {
+    src: "/hero-icons/icon_charging_bull.png",
+    spriteSize: 1.7,
+    orbitR: 5.1, orbitY: 1.7, orbitTilt: 0.20, orbitAngle: 2.8,
+    orbitSpeed: 0.15,
+    bobAmp: 0.18, bobSpeed: 1.20, bobPhase: 2.1,
+    baseScale: 0.80, wobbleAmp: 0.08, wobbleSpeed: 0.7,
+    glowColor: 0x22c55e, glowIntens: 2.2,
+  },
+];
 
 // ─── Main component ────────────────────────────────────────────────────────────
-export default function HeroScene({ width = "100%", height = "100%" }: { width?: string; height?: string }) {
+export default function HeroScene({
+  width  = "100%",
+  height = "100%",
+}: {
+  width?: string;
+  height?: string;
+}) {
   const mountRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const container = mountRef.current;
     if (!container) return;
 
-    // ── Renderer ────────────────────────────────────────────────────────────
+    // ── Renderer ──────────────────────────────────────────────────────────
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.25;
-    const W = container.clientWidth  || 520;
-    const H = container.clientHeight || 580;
+    renderer.shadowMap.enabled  = true;
+    renderer.shadowMap.type     = THREE.PCFSoftShadowMap;
+    renderer.toneMapping        = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.2;
+    const W = container.clientWidth  || 640;
+    const H = container.clientHeight || 680;
     renderer.setSize(W, H);
     renderer.setClearColor(0x000000, 0);
     container.appendChild(renderer.domElement);
 
-    // ── Scene / Camera ───────────────────────────────────────────────────────
+    // ── Scene / Camera ────────────────────────────────────────────────────
     const scene  = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(46, W / H, 0.1, 200);
-    camera.position.set(0, 2.8, 12.5);
-    camera.lookAt(0, 0.6, 0);
+    // Camera pulled back and shifted up to frame the laptop comfortably.
+    // FOV 44 gives a natural perspective without distortion.
+    const camera = new THREE.PerspectiveCamera(44, W / H, 0.1, 200);
+    // Camera sits at x=0; lookAt aimed at x=-1.5 so the scene content (at
+    // root x=0) projects ~100px right of canvas centre — clear of the left
+    // text column.  FOV 44 at z=14: half-width ≈ 5.66 wu, so 1.5 wu ≈ 27%
+    // of half-width → ~80-110px on a 600-800px wide column.
+    camera.position.set(0, 3.2, 14);
+    camera.lookAt(-1.5, 0.8, 0);
 
-    // ── Lights ───────────────────────────────────────────────────────────────
-    scene.add(new THREE.AmbientLight(0xffffff, 0.48));
+    // ── Lights ────────────────────────────────────────────────────────────
+    scene.add(new THREE.AmbientLight(0xffffff, 0.55));
 
     const sun = new THREE.DirectionalLight(0xffffff, 1.8);
     sun.position.set(8, 14, 9);
@@ -550,117 +148,203 @@ export default function HeroScene({ width = "100%", height = "100%" }: { width?:
     sun.shadow.mapSize.set(2048, 2048);
     scene.add(sun);
 
-    const fillL = new THREE.DirectionalLight(0xbfdbfe, 0.6);
+    const fillL = new THREE.DirectionalLight(0xbfdbfe, 0.65);
     fillL.position.set(-7, 5, 6);
     scene.add(fillL);
 
-    const rimL = new THREE.DirectionalLight(0xfbbf24, 0.28);
+    const rimL = new THREE.DirectionalLight(0xfbbf24, 0.30);
     rimL.position.set(5, -3, -5);
     scene.add(rimL);
 
-    const greenKey = new THREE.PointLight(0x22c55e, 4.5, 16);
+    const greenKey = new THREE.PointLight(0x22c55e, 4.5, 18);
     greenKey.position.set(-3, 4, 5);
     scene.add(greenKey);
 
-    const goldKey = new THREE.PointLight(0xfbbf24, 3.2, 14);
+    const goldKey = new THREE.PointLight(0xfbbf24, 3.2, 16);
     goldKey.position.set(4, 1, 4);
     scene.add(goldKey);
 
-    // ── Root group ───────────────────────────────────────────────────────────
+    // ── Root group — mouse tilt applied here ──────────────────────────────
     const root = new THREE.Group();
+    // Scale the whole composition down 8% to reduce visual dominance and
+    // give more breathing room around the text.
+    root.scale.setScalar(0.92);
     scene.add(root);
 
-    // ── Screen texture & laptop ──────────────────────────────────────────────
-    const screenTex = new THREE.TextureLoader().load("/stoked-logo.png");
-    screenTex.colorSpace = THREE.SRGBColorSpace;
-    const laptopGroup = makeLaptop(screenTex);
-    laptopGroup.position.set(0, -1.8, 0);
-    laptopGroup.rotation.x = -0.05;
+    // ── Laptop group — holds the GLB ──────────────────────────────────────
+    const laptopGroup = new THREE.Group();
     root.add(laptopGroup);
 
-    // ── Icon orbit configurations ────────────────────────────────────────────
-    // Two orbit rings: upper (r=5, y≈1.5-3.5) and lower (r=4, y≈-0.5 to 1)
-    // Each icon orbits in a tilted elliptical plane
-    const orbitConfigs: Omit<IconEntry, "group" | "currentScale" | "pointLight">[] = [
-      // Chart — upper ring, starts top-left
-      {
-        orbitR: 4.8, orbitY: 2.2, orbitTilt: 0.3, orbitAngle: 2.4,
-        orbitSpeed: 0.28, bobAmp: 0.24, bobSpeed: 1.1, bobPhase: 0.0,
-        baseScale: 0.98, idleRotSpeed: new THREE.Vector3(0, 0.2, 0.04),
-      },
-      // Rocket — upper ring, top-center
-      {
-        orbitR: 4.0, orbitY: 3.0, orbitTilt: 0.18, orbitAngle: 1.1,
-        orbitSpeed: 0.22, bobAmp: 0.32, bobSpeed: 0.85, bobPhase: 1.1,
-        baseScale: 1.12, idleRotSpeed: new THREE.Vector3(0.04, 0.16, 0.02),
-      },
-      // Dashboard — upper ring, right
-      {
-        orbitR: 4.6, orbitY: 1.8, orbitTilt: 0.24, orbitAngle: 0.1,
-        orbitSpeed: 0.24, bobAmp: 0.20, bobSpeed: 1.2, bobPhase: 2.4,
-        baseScale: 0.92, idleRotSpeed: new THREE.Vector3(0, 0.22, 0),
-      },
-      // Bull — lower ring, left
-      {
-        orbitR: 4.2, orbitY: 0.4, orbitTilt: 0.4, orbitAngle: 3.6,
-        orbitSpeed: 0.32, bobAmp: 0.28, bobSpeed: 0.95, bobPhase: 0.7,
-        baseScale: 0.84, idleRotSpeed: new THREE.Vector3(0, 0.28, 0),
-      },
-      // Money bag — lower ring, right
-      {
-        orbitR: 4.0, orbitY: 0.8, orbitTilt: 0.35, orbitAngle: 5.8,
-        orbitSpeed: 0.26, bobAmp: 0.26, bobSpeed: 1.05, bobPhase: 2.0,
-        baseScale: 0.88, idleRotSpeed: new THREE.Vector3(0, 0.24, 0.03),
-      },
-      // Coins — lower ring, lower-right
-      {
-        orbitR: 4.5, orbitY: -0.4, orbitTilt: 0.28, orbitAngle: 5.1,
-        orbitSpeed: 0.30, bobAmp: 0.18, bobSpeed: 1.35, bobPhase: 3.1,
-        baseScale: 0.76, idleRotSpeed: new THREE.Vector3(0, 0.36, 0),
-      },
-    ];
+    // ── Screen texture: white canvas + logo ───────────────────────────────
+    // We draw a white rectangle into an offscreen canvas, then stamp the logo
+    // centered with padding. This guarantees the logo is always legible
+    // regardless of how dark the GLB's underlying screen mesh is.
+    // flipY=false matches GLTFLoader's UV convention (top-left origin).
+    const texLoader = new THREE.TextureLoader();
+    const screenCanvas = document.createElement("canvas");
+    screenCanvas.width  = 1024;
+    screenCanvas.height = 640;
+    const ctx2d = screenCanvas.getContext("2d")!;
+    ctx2d.fillStyle = "#ffffff";
+    ctx2d.fillRect(0, 0, 1024, 640);
 
-    const builders = [
-      makeChartIcon, makeRocketIcon, makeDashboardIcon,
-      makeBullIcon, makeMoneyBagIcon, makeCoinStackIcon,
-    ];
-    const glowColors  = [0x22c55e, 0xfbbf24, 0x3b82f6, 0x22c55e, 0xfbbf24, 0xfbbf24];
-    const glowIntens  = [2.8, 3.2, 2.5, 2.6, 3.0, 2.8];
+    const screenTex = new THREE.CanvasTexture(screenCanvas);
+    screenTex.flipY      = false;
+    screenTex.colorSpace = THREE.SRGBColorSpace;
 
-    const icons: IconEntry[] = orbitConfigs.map((cfg, i) => {
-      const group = builders[i]();
+    // Load logo PNG into the canvas preserving its natural aspect ratio.
+    // Target: logo fills ~52% of canvas width, centered, with clean padding.
+    // We never stretch — we use contain-style scaling so proportions are exact.
+    const logoImg = new Image();
+    logoImg.onload = () => {
+      const cW = 1024, cH = 640;
+
+      // Target draw width = 62% of canvas; derive height from natural ratio
+      const targetW = cW * 0.62;
+      const naturalAspect = logoImg.naturalWidth / logoImg.naturalHeight;
+      const targetH = targetW / naturalAspect;
+
+      // If derived height would overflow (very tall logo), clamp to 60% of cH
+      const maxH = cH * 0.60;
+      const drawW = targetH > maxH ? maxH * naturalAspect : targetW;
+      const drawH = targetH > maxH ? maxH : targetH;
+
+      const drawX = (cW - drawW) / 2;
+      const drawY = (cH - drawH) / 2;
+
+      ctx2d.fillStyle = "#ffffff";
+      ctx2d.fillRect(0, 0, cW, cH);
+      ctx2d.drawImage(logoImg, drawX, drawY, drawW, drawH);
+      screenTex.needsUpdate = true;
+    };
+    logoImg.src = "/hero-icons/stoked-logo.png";
+
+    const glbLoader = new GLTFLoader();
+    glbLoader.load(
+      "/models/macbook.glb",
+      (gltf) => {
+        const model = gltf.scene;
+
+        // ── Normalize scale ──────────────────────────────────────────────
+        // GLB raw bounds: X ≈ 31.2 units wide. Target: 4.6 world units wide.
+        // Adjust TARGET_WIDTH to make the laptop larger or smaller.
+        const TARGET_WIDTH = 4.6;
+        const rawBox = new THREE.Box3().setFromObject(model);
+        const rawSize = rawBox.getSize(new THREE.Vector3());
+        const scaleFactor = TARGET_WIDTH / rawSize.x;
+        model.scale.setScalar(scaleFactor);
+
+        // ── Centre the model ─────────────────────────────────────────────
+        const box = new THREE.Box3().setFromObject(model);
+        const center = box.getCenter(new THREE.Vector3());
+        // Place centroid at origin, then shift group for final positioning
+        model.position.sub(center);
+
+        // ── Enable shadows on all meshes ─────────────────────────────────
+        model.traverse((child) => {
+          if (child instanceof THREE.Mesh) {
+            child.castShadow    = true;
+            child.receiveShadow = true;
+
+            // ── Apply logo to screen mesh ────────────────────────────────
+            // The screen face uses the only material in the GLB that has
+            // both an emissiveMap AND full-white emissive (1,1,1). Replacing
+            // it with MeshBasicMaterial gives a clean, always-bright logo.
+            const mats = Array.isArray(child.material)
+              ? child.material
+              : [child.material];
+
+            mats.forEach((mat, idx) => {
+              const m = mat as THREE.MeshStandardMaterial;
+              if (
+                m.emissiveMap !== null &&
+                m.emissiveMap !== undefined &&
+                m.emissive &&
+                m.emissive.r > 0.8 &&
+                m.emissive.g > 0.8 &&
+                m.emissive.b > 0.8
+              ) {
+                const screenMat = new THREE.MeshBasicMaterial({
+                  map:  screenTex,
+                  side: THREE.FrontSide,
+                });
+                if (Array.isArray(child.material)) {
+                  child.material[idx] = screenMat;
+                } else {
+                  child.material = screenMat;
+                }
+              }
+            });
+          }
+        });
+
+        laptopGroup.add(model);
+      },
+      undefined,
+      (err) => console.error("GLB load error:", err)
+    );
+
+    // ── Final laptop group position ───────────────────────────────────────
+    // Adjust Y to lift/lower the laptop; Z to push it back/forward.
+    laptopGroup.position.set(0, -0.8, 0);
+
+    // ── Sprite icons ──────────────────────────────────────────────────────
+    // THREE.Sprite always faces the camera (billboard). SpriteMaterial is
+    // unlit so PNG artwork renders at full pixel fidelity.
+    type LiveIcon = {
+      group:        THREE.Group;
+      sprite:       THREE.Sprite;
+      pointLight:   THREE.PointLight;
+      cfg:          IconCfg;
+      currentScale: number;
+    };
+
+    const liveIcons: LiveIcon[] = ICON_CONFIGS.map((cfg) => {
+      const tex = texLoader.load(cfg.src);
+      tex.colorSpace = THREE.SRGBColorSpace;
+
+      const spriteMat = new THREE.SpriteMaterial({
+        map:         tex,
+        transparent: true,
+        depthWrite:  false,
+        alphaTest:   0.01,
+      });
+      const sprite = new THREE.Sprite(spriteMat);
+      sprite.scale.set(cfg.spriteSize, cfg.spriteSize, 1);
+
+      const group = new THREE.Group();
       group.scale.setScalar(cfg.baseScale);
-      root.add(group);
+      group.add(sprite);
 
-      const pl = new THREE.PointLight(glowColors[i], glowIntens[i], 4.5);
+      const pl = new THREE.PointLight(cfg.glowColor, cfg.glowIntens, 5.5);
       pl.position.set(0, 0, 0.5);
       group.add(pl);
 
-      return { ...cfg, group, currentScale: cfg.baseScale, pointLight: pl };
+      root.add(group);
+      return { group, sprite, pointLight: pl, cfg, currentScale: cfg.baseScale };
     });
 
-    // ── Mouse state ──────────────────────────────────────────────────────────
+    // ── Mouse / touch ─────────────────────────────────────────────────────
     let rawX = 0, rawY = 0, smoothX = 0, smoothY = 0;
-    const mouseNDC = new THREE.Vector2(0, 0);
+    const mouseNDC = new THREE.Vector2();
 
     const onMouseMove = (e: MouseEvent) => {
-      const rect = container.getBoundingClientRect();
-      rawX = ((e.clientX - rect.left) / rect.width  - 0.5) * 2;
-      rawY = ((e.clientY - rect.top)  / rect.height - 0.5) * 2;
+      const r = container.getBoundingClientRect();
+      rawX = ((e.clientX - r.left) / r.width  - 0.5) * 2;
+      rawY = ((e.clientY - r.top)  / r.height - 0.5) * 2;
       mouseNDC.set(rawX, -rawY);
     };
     window.addEventListener("mousemove", onMouseMove);
 
-    // Mobile touch
     const onTouchMove = (e: TouchEvent) => {
       const t = e.touches[0];
-      const rect = container.getBoundingClientRect();
-      rawX = ((t.clientX - rect.left) / rect.width  - 0.5) * 2;
-      rawY = ((t.clientY - rect.top)  / rect.height - 0.5) * 2;
+      const r = container.getBoundingClientRect();
+      rawX = ((t.clientX - r.left) / r.width  - 0.5) * 2;
+      rawY = ((t.clientY - r.top)  / r.height - 0.5) * 2;
     };
     container.addEventListener("touchmove", onTouchMove, { passive: true });
 
-    // ── Resize ───────────────────────────────────────────────────────────────
+    // ── Resize ────────────────────────────────────────────────────────────
     const onResize = () => {
       const W2 = container.clientWidth;
       const H2 = container.clientHeight;
@@ -672,7 +356,23 @@ export default function HeroScene({ width = "100%", height = "100%" }: { width?:
     const ro = new ResizeObserver(onResize);
     ro.observe(container);
 
-    // ── Animation loop ────────────────────────────────────────────────────────
+    // ── Soft collision avoidance ──────────────────────────────────────────
+    // Each icon carries a small repulsion velocity that is decayed each frame.
+    // When two icons come within REPEL_DIST of each other, a quadratic force
+    // pushes their velocities apart. Because orbit positions are reset from the
+    // ellipse formula every frame, the velocity is only an additive offset —
+    // drift cannot accumulate; the icons always want to return to their paths.
+    //
+    // Tuning:
+    //   REPEL_DIST     — world-unit radius that triggers repulsion (wider = more space)
+    //   REPEL_STRENGTH — peak force at zero distance (larger = stronger push)
+    //   REPEL_DAMPING  — velocity decay per frame (0.7 = snappy, 0.9 = floaty)
+    const REPEL_DIST     = 2.4;
+    const REPEL_STRENGTH = 0.007;
+    const REPEL_DAMPING  = 0.80;
+    const repelVel = liveIcons.map(() => new THREE.Vector3());
+
+    // ── Animation loop ────────────────────────────────────────────────────
     const clock = new THREE.Clock();
     let animId = 0;
 
@@ -681,62 +381,76 @@ export default function HeroScene({ width = "100%", height = "100%" }: { width?:
       const t = clock.getElapsedTime();
       clock.getDelta();
 
-      // Mouse smooth (fast lerp for responsiveness)
+      // Smooth mouse
       smoothX += (rawX - smoothX) * 0.075;
       smoothY += (rawY - smoothY) * 0.075;
 
-      // Scene tilt — large, obvious effect
-      root.rotation.y  =  smoothX * 0.55;
-      root.rotation.x  = -smoothY * 0.32;
+      // Whole-scene tilt from mouse
+      root.rotation.y =  smoothX * 0.50;
+      root.rotation.x = -smoothY * 0.28;
 
-      // Update icons
-      for (let i = 0; i < icons.length; i++) {
-        const ic = icons[i];
-        ic.orbitAngle += ic.orbitSpeed * 0.016;
+      // Laptop gentle float
+      laptopGroup.position.y = -0.8 + Math.sin(t * 0.48) * 0.07;
 
-        // Elliptical orbit in tilted plane
-        const ca = ic.orbitAngle;
-        const bob = Math.sin(t * ic.bobSpeed + ic.bobPhase) * ic.bobAmp;
-        const rx = Math.cos(ca) * ic.orbitR;
-        const rz = Math.sin(ca) * ic.orbitR * 0.55; // flatten Z → looks more like a circle from camera
-        // Apply orbit tilt around X axis
-        const ry = ic.orbitY + Math.sin(ca) * ic.orbitR * ic.orbitTilt + bob;
+      // ── Pass 1: set orbit positions + sprite wobble ────────────────────
+      for (const ic of liveIcons) {
+        const cfg = ic.cfg;
+        const angle = cfg.orbitAngle + t * cfg.orbitSpeed;
+
+        // Elliptical orbit: Z flattened to 55% gives a convincing tilted-ring look
+        const rx  = Math.cos(angle) * cfg.orbitR;
+        const rz  = Math.sin(angle) * cfg.orbitR * 0.55;
+        const bob = Math.sin(t * cfg.bobSpeed + cfg.bobPhase) * cfg.bobAmp;
+        const ry  = cfg.orbitY + Math.sin(angle) * cfg.orbitR * cfg.orbitTilt + bob;
         ic.group.position.set(rx, ry, rz);
 
-        // Idle rotation
-        ic.group.rotation.y += ic.idleRotSpeed.y * 0.016;
-        ic.group.rotation.x += ic.idleRotSpeed.x * 0.016;
-        ic.group.rotation.z += ic.idleRotSpeed.z * 0.016;
+        // Billboard Z-tilt wobble (only rotation visible on a Sprite)
+        ic.sprite.material.rotation =
+          Math.sin(t * cfg.wobbleSpeed + cfg.bobPhase) * cfg.wobbleAmp;
+      }
 
-        // Follow cursor: lean icon toward cursor position
-        ic.group.rotation.x += (smoothY * 0.18 - ic.group.rotation.x) * 0.03;
-
-        // Sparkle pulse (money bag and coins)
-        ic.group.children.forEach(child => {
-          if ((child as THREE.Mesh).userData?.sparkle) {
-            const pulse = 0.55 + 0.55 * Math.abs(Math.sin(t * 3.2 + i * 0.8));
-            child.scale.setScalar(pulse);
-            (child as THREE.Mesh).rotation.y = t * 2.5;
-            (child as THREE.Mesh).rotation.x = t * 1.8;
+      // ── Soft repulsion pass ────────────────────────────────────────────
+      // Decay existing velocities first, then accumulate new pairwise forces.
+      for (let ri = 0; ri < repelVel.length; ri++) {
+        repelVel[ri].multiplyScalar(REPEL_DAMPING);
+      }
+      for (let i = 0; i < liveIcons.length; i++) {
+        for (let j = i + 1; j < liveIcons.length; j++) {
+          const pa   = liveIcons[i].group.position;
+          const pb   = liveIcons[j].group.position;
+          const diff = new THREE.Vector3().subVectors(pa, pb);
+          const dist = diff.length();
+          if (dist < REPEL_DIST && dist > 0.001) {
+            const ratio = 1 - dist / REPEL_DIST;
+            const force = REPEL_STRENGTH * ratio * ratio; // quadratic falloff
+            diff.normalize().multiplyScalar(force);
+            repelVel[i].add(diff);
+            repelVel[j].sub(diff);
           }
-        });
+        }
+      }
+      // Apply velocity offsets on top of the orbit-computed positions
+      liveIcons.forEach((ic, ri) => { ic.group.position.add(repelVel[ri]); });
 
-        // Hover detection via screen-space proximity
-        const proj = ic.group.position.clone();
-        proj.project(camera);
-        const dx = proj.x - mouseNDC.x;
-        const dy = proj.y - mouseNDC.y;
-        const hovDist = Math.sqrt(dx * dx + dy * dy);
-        const targetScale = hovDist < 0.26 ? ic.baseScale * 1.44 : ic.baseScale;
+      // ── Pass 2: hover scale + glow (positions now finalised) ──────────
+      for (const ic of liveIcons) {
+        const cfg  = ic.cfg;
+
+        // Hover: grow icon when cursor is close in screen-space
+        const proj = ic.group.position.clone().project(camera);
+        const dx   = proj.x - mouseNDC.x;
+        const dy   = proj.y - mouseNDC.y;
+        const targetScale =
+          Math.sqrt(dx * dx + dy * dy) < 0.28
+            ? cfg.baseScale * 1.44
+            : cfg.baseScale;
         ic.currentScale += (targetScale - ic.currentScale) * 0.12;
         ic.group.scale.setScalar(ic.currentScale);
 
-        // Per-icon light pulse
-        ic.pointLight.intensity = glowIntens[i] + Math.sin(t * 2.2 + i * 0.9) * 1.2;
+        // Glow pulse
+        ic.pointLight.intensity =
+          cfg.glowIntens + Math.sin(t * 2.2 + cfg.bobPhase) * 1.0;
       }
-
-      // Laptop slow bob
-      laptopGroup.position.y = -1.8 + Math.sin(t * 0.48) * 0.06;
 
       // Global light pulses
       greenKey.intensity = 4.2 + Math.sin(t * 1.2) * 1.4;
@@ -745,7 +459,6 @@ export default function HeroScene({ width = "100%", height = "100%" }: { width?:
       renderer.render(scene, camera);
     };
 
-    // Wait a frame so container has real dimensions
     requestAnimationFrame(() => { onResize(); animate(); });
 
     return () => {
@@ -754,15 +467,27 @@ export default function HeroScene({ width = "100%", height = "100%" }: { width?:
       container.removeEventListener("touchmove", onTouchMove);
       ro.disconnect();
       screenTex.dispose();
+      liveIcons.forEach((ic) => {
+        ic.sprite.material.map?.dispose();
+        ic.sprite.material.dispose();
+      });
       renderer.dispose();
-      if (container.contains(renderer.domElement)) container.removeChild(renderer.domElement);
+      if (container.contains(renderer.domElement)) {
+        container.removeChild(renderer.domElement);
+      }
     };
   }, []);
 
   return (
     <div
       ref={mountRef}
-      style={{ width, height, minHeight: 540, position: "relative", cursor: "grab" }}
+      style={{
+        width,
+        height,
+        minHeight: 640,
+        position: "relative",
+        cursor: "grab",
+      }}
     />
   );
 }
