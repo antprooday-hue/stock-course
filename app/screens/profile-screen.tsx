@@ -91,8 +91,14 @@ export function ProfileScreen() {
       const nextNickname = nicknameDraft.trim();
 
       setNickname(nextNickname);
-      if (signedInEmail) {
-        const supabase = getSupabaseBrowserClient();
+      setMessage("Nickname updated.");
+
+      if (!signedInEmail) {
+        return;
+      }
+
+      const supabase = getSupabaseBrowserClient();
+      void (async () => {
         const { error: authError } = await supabase.auth.updateUser({
           data: {
             nickname: nextNickname,
@@ -104,8 +110,10 @@ export function ProfileScreen() {
         }
 
         await syncNicknameForCurrentUser(nextNickname);
-      }
-      setMessage("Nickname updated.");
+      })().catch((error) => {
+        console.warn("Nickname sync failed after local save.", error);
+        setMessage("Nickname updated on this device. Account sync may take a moment.");
+      });
     } catch (error) {
       setErrorMessage(
         error instanceof Error ? error.message : "Unable to update your nickname.",
