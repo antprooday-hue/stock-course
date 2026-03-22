@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { AwardIcon, DownloadIcon } from "../components/icons";
 import {
@@ -10,7 +10,13 @@ import {
   subscribeToCourseStorage,
 } from "../lib/course-storage";
 
-export function CertificateScreen() {
+type CertificateScreenProps = {
+  printMode?: boolean;
+};
+
+export function CertificateScreen({
+  printMode = false,
+}: CertificateScreenProps) {
   const router = useRouter();
   const storedNickname = useSyncExternalStore(
     subscribeToCourseStorage,
@@ -44,10 +50,39 @@ export function CertificateScreen() {
 
   const font = "var(--font-dm-sans,'DM Sans',system-ui,sans-serif)";
 
+  useEffect(() => {
+    if (!printMode) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      window.print();
+    }, 180);
+
+    return () => window.clearTimeout(timeout);
+  }, [printMode]);
+
   return (
-    <div style={{ minHeight: "100vh", background: "#f9fafb", fontFamily: font }}>
+    <div
+      className="certificate-page"
+      style={{
+        minHeight: "100vh",
+        background: printMode ? "#ffffff" : "#f9fafb",
+        fontFamily: font,
+      }}
+    >
       {/* Top bar */}
-      <div className="print:hidden" style={{ borderBottom: "2px solid #e5e7eb", background: "#fff", padding: "16px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div
+        className="print:hidden"
+        style={{
+          borderBottom: "2px solid #e5e7eb",
+          background: "#fff",
+          padding: "16px 24px",
+          display: printMode ? "none" : "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
         <button
           type="button"
           onClick={() => router.push("/completion")}
@@ -58,7 +93,7 @@ export function CertificateScreen() {
 
         <button
           type="button"
-          onClick={() => window.print()}
+          onClick={() => router.push("/certificate/print")}
           style={{
             display: "inline-flex", alignItems: "center", gap: 8,
             padding: "10px 20px", borderRadius: 12, border: "none",
@@ -75,16 +110,25 @@ export function CertificateScreen() {
       </div>
 
       {/* Certificate */}
-      <div style={{ maxWidth: 800, margin: "0 auto", padding: "40px 24px" }}>
-        <div style={{
-          background: "#fff",
-          borderRadius: 24,
-          border: "2px solid #e5e7eb",
-          boxShadow: "0 8px 0 #e5e7eb",
-          padding: "64px 48px",
-          position: "relative",
-          textAlign: "center",
-        }}>
+      <div
+        style={{
+          maxWidth: 800,
+          margin: "0 auto",
+          padding: printMode ? "24px 16px" : "40px 24px",
+        }}
+      >
+        <div
+          className="certificate-sheet"
+          style={{
+            background: "#fff",
+            borderRadius: 24,
+            border: "2px solid #e5e7eb",
+            boxShadow: "0 8px 0 #e5e7eb",
+            padding: printMode ? "48px 32px" : "64px 48px",
+            position: "relative",
+            textAlign: "center",
+          }}
+        >
           {/* Corner accents */}
           <div style={{ position: "absolute", top: 20, left: 20, width: 48, height: 48, borderTop: "4px solid #bbf7d0", borderLeft: "4px solid #bbf7d0", borderRadius: "12px 0 0 0" }} />
           <div style={{ position: "absolute", top: 20, right: 20, width: 48, height: 48, borderTop: "4px solid #bbf7d0", borderRight: "4px solid #bbf7d0", borderRadius: "0 12px 0 0" }} />
@@ -115,11 +159,16 @@ export function CertificateScreen() {
           </p>
 
           {/* Stats row */}
-          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 32, marginBottom: 40 }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+              gap: 20,
+              marginBottom: 40,
+            }}
+          >
             <CertDetail label="Completion Date" value={completionDate} />
-            <div style={{ width: 1, background: "#e5e7eb", alignSelf: "stretch" }} />
             <CertDetail label="Completion Time" value="74 minutes" />
-            <div style={{ width: 1, background: "#e5e7eb", alignSelf: "stretch" }} />
             <CertDetail label="Lessons Finished" value="10 lessons" />
           </div>
 
@@ -128,7 +177,16 @@ export function CertificateScreen() {
           </p>
         </div>
 
-        <p className="print:hidden" style={{ textAlign: "center", marginTop: 16, fontSize: 13, color: "#9ca3af" }}>
+        <p
+          className="print:hidden"
+          style={{
+            display: printMode ? "none" : "block",
+            textAlign: "center",
+            marginTop: 16,
+            fontSize: 13,
+            color: "#9ca3af",
+          }}
+        >
           Tip: Use your browser&apos;s print function to save this certificate as a PDF
         </p>
       </div>

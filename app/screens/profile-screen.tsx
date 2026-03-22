@@ -185,6 +185,7 @@ export function ProfileScreen() {
       setErrorMessage(
         error instanceof Error ? error.message : "Unable to delete your account.",
       );
+    } finally {
       setDeleteLoading(false);
     }
   }

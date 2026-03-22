@@ -83,7 +83,14 @@ export function CompletionScreen() {
           </p>
 
           {/* Stats */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 32 }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+              gap: 12,
+              marginBottom: 32,
+            }}
+          >
             <CompletionStat icon={<ClockIcon style={{ width: 20, height: 20, color: "#22c55e", margin: "0 auto 8px" }} />} label="Time" value="74 min" />
             <CompletionStat icon={<BrainIcon style={{ width: 20, height: 20, color: "#22c55e", margin: "0 auto 8px" }} />} label="Lessons" value="10" />
             <CompletionStat icon={<AwardIcon style={{ width: 20, height: 20, color: "#22c55e", margin: "0 auto 8px" }} />} label="Accuracy" value="96%" />
@@ -100,7 +107,7 @@ export function CompletionScreen() {
               <DuoBtn onClick={() => router.push("/certificate")}>
                 <AwardIcon style={{ width: 16, height: 16 }} /> View certificate
               </DuoBtn>
-              <DuoBtn secondary onClick={() => window.print()}>
+              <DuoBtn secondary onClick={() => router.push("/certificate/print")}>
                 <DownloadIcon style={{ width: 16, height: 16 }} /> Download
               </DuoBtn>
               <DuoBtn secondary onClick={handleShare}>

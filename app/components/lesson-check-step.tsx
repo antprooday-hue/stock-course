@@ -58,7 +58,10 @@ export function LessonCheckStep(props: LessonCheckStepProps) {
   const prompt = capitalizeLead(activeCase?.prompt ?? content.question);
   const explanation = capitalizeLead(activeCase?.explanation ?? content.explanation);
   const reviewPrompt = activeCase?.reviewPrompt ?? content.reviewPrompt;
-  const optionList = activeCase?.options ?? content.options ?? [];
+  const optionList = useMemo(
+    () => activeCase?.options ?? content.options ?? [],
+    [activeCase, content.options],
+  );
   const answerType = activeCase ? "multiple" : content.type;
   const currentCorrectAnswer = activeCase ? undefined : content.correctAnswer;
 

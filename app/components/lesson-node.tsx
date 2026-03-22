@@ -46,7 +46,7 @@ export function LessonNode({
   const [transitionState, setTransitionState] = useState<
     "idle" | "complete" | "activate" | "locked-bump" | "boss-awaken"
   >("idle");
-  const previousStateRef = useRef(state);
+  const previousStateRef = useRef(effectiveState);
   const lockedTimeoutRef = useRef<number | null>(null);
   const interactive = effectiveState !== "locked";
   const sizeClass = isBoss
@@ -91,7 +91,7 @@ export function LessonNode({
     }
 
     previousStateRef.current = effectiveState;
-  }, [effectiveState, isBoss]);
+  }, [effectiveState, isBoss, state]);
 
   useEffect(() => {
     if (effectiveState === "current" && sequenceKey > 0) {
@@ -172,7 +172,7 @@ export function LessonNode({
             interactive ? "interactive-cta interactive-node scale-100 hover:scale-[1.06]" : "interactive-node-locked"
           } ${statusClass}`}
           data-boss={isBoss}
-          data-state={state}
+          data-state={effectiveState}
           data-transition={transitionState}
           style={{
             borderColor:

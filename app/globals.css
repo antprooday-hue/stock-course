@@ -369,7 +369,25 @@ input {
   }
 
   @page {
-    margin: 1cm;
+    margin: 0.5in;
+    size: letter portrait;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+  }
+
+  .certificate-page {
+    min-height: auto !important;
+    background: #ffffff !important;
+  }
+
+  .certificate-sheet {
+    border: 1px solid #d1d5db !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    break-inside: avoid;
   }
 
   .print-certificate-shell {
