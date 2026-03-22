@@ -100,118 +100,6 @@ function LeftSidebar({ hearts, streak, totalXp }: SidebarProps) {
   );
 }
 
-// ─── Right panel ──────────────────────────────────────────────────────────────
-type RightPanelProps = {
-  completionPercent: number;
-  completedLessons: number;
-  isSignedIn: boolean;
-  onGoogleSignIn: () => void;
-  profileHref: string;
-  signedInEmail: string | null;
-  totalLessons: number;
-  rank: string;
-  resumeHref: string;
-  streak: number;
-};
-
-function RightPanel({
-  completionPercent,
-  completedLessons,
-  isSignedIn,
-  onGoogleSignIn,
-  profileHref,
-  signedInEmail,
-  totalLessons,
-  rank,
-  resumeHref,
-  streak,
-}: RightPanelProps) {
-  return (
-    <aside className="sticky top-0 hidden h-screen w-[260px] flex-shrink-0 flex-col gap-4 overflow-y-auto border-l border-gray-100 bg-white px-4 py-8 xl:flex">
-      {/* Daily goal */}
-      <div className="rounded-2xl border-2 border-gray-100 bg-white p-5 shadow-[0_3px_0_#ebebeb]">
-        <div className="mb-4 flex items-center gap-2">
-          <span className="text-xl">🎯</span>
-          <span className="text-xs font-black uppercase tracking-wider text-gray-400">Daily goal</span>
-        </div>
-        <div className="mb-3 flex items-end justify-between">
-          <span className="text-sm font-black text-[#1a2b4a]">{completedLessons} / {totalLessons} lessons</span>
-          <span className="text-sm font-black text-[#22c55e]">{completionPercent}%</span>
-        </div>
-        <div className="h-4 w-full overflow-hidden rounded-full bg-gray-100">
-          <div
-            className="h-full rounded-full bg-[#22c55e] transition-all duration-700"
-            style={{ width: `${completionPercent}%` }}
-          />
-        </div>
-      </div>
-
-      {/* Streak */}
-      <div className="rounded-2xl border-2 border-[#ff9600] bg-orange-50 p-5 shadow-[0_4px_0_#f09000]">
-        <div className="flex items-center gap-3">
-          <span className="text-3xl">🔥</span>
-          <div>
-            <div className="text-2xl font-black text-[#ff9600]">{streak} day streak</div>
-            <div className="text-xs font-bold text-orange-400">Keep it going!</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Rank */}
-      <div className="rounded-2xl border-2 border-gray-100 bg-white p-5 shadow-[0_3px_0_#ebebeb]">
-        <div className="mb-1 flex items-center gap-2">
-          <span className="text-xl">🏅</span>
-          <span className="text-xs font-black uppercase tracking-wider text-gray-400">Your rank</span>
-        </div>
-        <div className="text-xl font-black text-[#1a2b4a]">{rank}</div>
-        <div className="mt-1 text-xs text-gray-400">Keep completing lessons to advance</div>
-      </div>
-
-      <div className={`rounded-2xl p-5 shadow-[0_3px_0_#ebebeb] ${isSignedIn ? "border-2 border-[#bbf7d0] bg-[#f0fdf4]" : "border-2 border-gray-100 bg-white"}`}>
-        <div className="mb-2 flex items-center gap-2">
-          <span className="text-xl">{isSignedIn ? "☁️" : "🔐"}</span>
-          <span className="text-xs font-black uppercase tracking-wider text-gray-400">
-            {isSignedIn ? "Synced progress" : "Save your progress"}
-          </span>
-        </div>
-        <div className="text-base font-black text-[#1a2b4a]">
-          {isSignedIn ? "Google account connected" : "Keep your lessons across visits"}
-        </div>
-        <div className="mt-2 text-xs leading-5 text-gray-500">
-          {isSignedIn
-            ? signedInEmail ?? "Your course progress now syncs to your account."
-            : "Sign in with Google so your course path, nickname, and login metadata follow your account."}
-        </div>
-        {isSignedIn ? (
-          <Link
-            href={profileHref}
-            className="mt-4 inline-flex w-full items-center justify-center rounded-2xl bg-[#22c55e] px-4 py-3 text-sm font-black uppercase tracking-wide text-white shadow-[0_4px_0_#16a34a]"
-          >
-            Open profile
-          </Link>
-        ) : (
-          <button
-            type="button"
-            onClick={onGoogleSignIn}
-            className="mt-4 inline-flex w-full items-center justify-center rounded-2xl border-2 border-gray-200 bg-white px-4 py-3 text-sm font-black uppercase tracking-wide text-[#172b4d] shadow-[0_3px_0_#ebebeb]"
-          >
-            Log in with Google
-          </button>
-        )}
-      </div>
-
-      {/* Resume CTA */}
-      <Link
-        href={resumeHref}
-        className="flex items-center justify-center gap-2 rounded-2xl bg-[#22c55e] px-5 py-4 text-sm font-black uppercase tracking-wide text-white shadow-[0_4px_0_#16a34a] transition-all hover:bg-[#1eb356] active:translate-y-[2px] active:shadow-[0_2px_0_#16a34a]"
-        prefetch={false}
-      >
-        Resume lesson
-      </Link>
-    </aside>
-  );
-}
-
 // ─── Mobile top bar (shown instead of sidebar on small screens) ───────────────
 type MobileBarProps = {
   streak: number;
@@ -278,7 +166,7 @@ export function CourseMapScreen() {
   const router = useRouter();
   const [freeJumpEnabled, setFreeJumpEnabled] = useState(false);
   const moduleAnchorRef = useRef<HTMLDivElement | null>(null);
-  const { signInWithGoogle, user } = useAuth();
+  const { user } = useAuth();
   const nickname = useSyncExternalStore(
     subscribeToCourseStorage,
     getNickname,
@@ -293,14 +181,6 @@ export function CourseMapScreen() {
   const hearts = getEffectiveHearts(storedProgress, Boolean(user));
   const currentModule = courseState.modules.find((m) => m.id === courseState.currentModuleId);
   const resumeHref    = useMemo(() => getNextLessonRoute(storedProgress), [storedProgress]);
-
-  async function handleGoogleSignIn() {
-    try {
-      await signInWithGoogle("/course");
-    } catch (error) {
-      console.error("Failed to start Google sign-in from the course map", error);
-    }
-  }
 
   useEffect(() => {
     if (user) {
@@ -354,7 +234,7 @@ export function CourseMapScreen() {
             resumeHref={resumeHref}
           />
 
-          <main className="mx-auto w-full max-w-4xl px-6 pb-24 pt-10">
+          <main className="mx-auto w-full max-w-[1380px] px-6 pb-24 pt-10 lg:px-8 xl:px-10">
             {/* Greeting */}
             <div className="mb-8">
               <p className="text-xs font-black uppercase tracking-widest text-gray-400">
@@ -401,7 +281,7 @@ export function CourseMapScreen() {
               </div>
             ) : (
               /* ── Normal mode: one themed roadmap per world ── */
-              <div className="space-y-14">
+              <div className="space-y-16">
                 {courseState.modules.map((module) => {
                   const isCurrent = module.id === courseState.currentModuleId;
                   return (
@@ -456,7 +336,7 @@ export function CourseMapScreen() {
                             border: "2px solid #e5e7eb",
                             borderRadius: 24,
                             boxShadow: "0 4px 0 #e0e0dc",
-                            padding: "36px 24px",
+                            padding: "52px 32px",
                             display: "flex",
                             flexDirection: "column",
                             alignItems: "center",
@@ -515,19 +395,6 @@ export function CourseMapScreen() {
           </main>
         </div>
 
-        {/* Right panel */}
-        <RightPanel
-          completionPercent={courseState.completionPercent}
-          completedLessons={courseState.completedLessons}
-          isSignedIn={Boolean(user)}
-          onGoogleSignIn={handleGoogleSignIn}
-          profileHref="/profile"
-          signedInEmail={user?.email ?? null}
-          totalLessons={courseState.totalLessons}
-          rank={courseState.rank}
-          resumeHref={resumeHref}
-          streak={courseState.streak}
-        />
       </div>
     </JourneySurface>
   );
