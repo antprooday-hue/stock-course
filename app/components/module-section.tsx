@@ -182,7 +182,7 @@ export function ModuleSection({ allowFreeJump = false, module }: ModuleSectionPr
         data-advancing={isAdvancing}
         data-return-focus={isReturnFocused}
         data-unlocking={isUnlocking}
-        style={{ height: 760 }}
+        style={{ height: "min(680px, calc(100vh - 230px))", minHeight: 560 }}
       >
         {/* Two atmospheric glow zones: bottom-left origin, top-right summit */}
         <div

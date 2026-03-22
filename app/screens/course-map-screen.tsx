@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SkillTreeRoadmap, type SkillLesson } from "../components/skill-tree-roadmap";
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { FinalAchievementCard } from "../components/final-achievement-card";
 import { JourneySurface } from "../components/journey-surface";
 import { ModuleSection } from "../components/module-section";
@@ -165,7 +165,6 @@ function toSkillLessons(module: DerivedModule): SkillLesson[] {
 export function CourseMapScreen() {
   const router = useRouter();
   const [freeJumpEnabled, setFreeJumpEnabled] = useState(false);
-  const moduleAnchorRef = useRef<HTMLDivElement | null>(null);
   const { user } = useAuth();
   const nickname = useSyncExternalStore(
     subscribeToCourseStorage,
@@ -179,7 +178,6 @@ export function CourseMapScreen() {
   );
   const courseState = useMemo(() => deriveCourseState(storedProgress), [storedProgress]);
   const hearts = getEffectiveHearts(storedProgress, Boolean(user));
-  const currentModule = courseState.modules.find((m) => m.id === courseState.currentModuleId);
   const resumeHref    = useMemo(() => getNextLessonRoute(storedProgress), [storedProgress]);
 
   useEffect(() => {
@@ -201,16 +199,6 @@ export function CourseMapScreen() {
       window.clearInterval(intervalId);
     };
   }, [user]);
-
-  useEffect(() => {
-    const section = moduleAnchorRef.current;
-    if (!section) return;
-    const rect = section.getBoundingClientRect();
-    const outside = rect.top < 92 || rect.bottom > window.innerHeight - 28;
-    if (!outside) return;
-    const t = window.setTimeout(() => section.scrollIntoView({ behavior: "smooth", block: "nearest" }), 140);
-    return () => window.clearTimeout(t);
-  }, [currentModule?.id]);
 
   return (
     <JourneySurface surface="map">
@@ -283,12 +271,10 @@ export function CourseMapScreen() {
               /* ── Normal mode: one themed roadmap per world ── */
               <div className="space-y-16">
                 {courseState.modules.map((module) => {
-                  const isCurrent = module.id === courseState.currentModuleId;
                   return (
                     <div
                       key={module.id}
                       id={`module-${module.slug}`}
-                      ref={isCurrent ? moduleAnchorRef : undefined}
                       style={{ opacity: module.locked ? 0.52 : 1, transition: "opacity 400ms" }}
                     >
                       {/* World header */}
