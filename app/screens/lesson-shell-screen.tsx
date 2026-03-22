@@ -54,6 +54,7 @@ import {
 import {
   completeLesson,
   getEffectiveHearts,
+  getProgressWithCompletedLesson,
   getServerCourseProgressSnapshot,
   getStoredCourseProgress,
   openLesson,
@@ -111,6 +112,14 @@ export function LessonShellScreen({
     () => deriveCourseState(storedProgress),
     [storedProgress],
   );
+  const rewardPreviewProgress = useMemo(
+    () => (currentStep === "reward" ? getProgressWithCompletedLesson(storedProgress, lesson.id) : storedProgress),
+    [currentStep, lesson.id, storedProgress],
+  );
+  const rewardCourseState = useMemo(
+    () => deriveCourseState(rewardPreviewProgress),
+    [rewardPreviewProgress],
+  );
   const derivedModule = courseState.modules.find(
     (item) => item.id === module.id,
   ) as DerivedModule | undefined;
@@ -120,6 +129,10 @@ export function LessonShellScreen({
   const [experience, setExperience] = useState(() =>
     getLessonExperienceFallback(module, lesson),
   );
+  const rewardDerivedModule = rewardCourseState.modules.find(
+    (item) => item.id === module.id,
+  ) as DerivedModule | undefined;
+  const rewardNextModule = rewardCourseState.modules.find((item) => item.id === module.id + 1);
 
   useEffect(() => {
     let active = true;
@@ -137,7 +150,6 @@ export function LessonShellScreen({
   }, [lesson, module]);
   const currentStepIndex = stepSequence.indexOf(currentStep);
   const stepProgress = ((currentStepIndex + 1) / stepSequence.length) * 100;
-  const nextModule = courseState.modules.find((item) => item.id === module.id + 1);
   const qaUnlocked = searchParams.get("qa") === "1";
   const isFoundationsBoss = module.id === 1 && lesson.lessonNumber === 10;
   const isChartBasicsBoss = module.id === 2 && lesson.lessonNumber === 10;
@@ -376,7 +388,6 @@ export function LessonShellScreen({
         return (
           <FoundationsBossCheck
             onComplete={() => {
-              completeLesson(lesson.id);
               setCurrentStep("reward");
             }}
             onIncorrect={handleIncorrect}
@@ -392,7 +403,6 @@ export function LessonShellScreen({
         return (
           <ChartBasicsBossCheck
             onComplete={() => {
-              completeLesson(lesson.id);
               setCurrentStep("reward");
             }}
             onIncorrect={handleIncorrect}
@@ -408,7 +418,6 @@ export function LessonShellScreen({
         return (
           <TrendMomentumBossCheck
             onComplete={() => {
-              completeLesson(lesson.id);
               setCurrentStep("reward");
             }}
             onIncorrect={handleIncorrect}
@@ -424,7 +433,6 @@ export function LessonShellScreen({
         return (
           <SupportResistanceBossCheck
             onComplete={() => {
-              completeLesson(lesson.id);
               setCurrentStep("reward");
             }}
             onIncorrect={handleIncorrect}
@@ -440,7 +448,6 @@ export function LessonShellScreen({
         return (
           <BreakoutVolumeBossCheck
             onComplete={() => {
-              completeLesson(lesson.id);
               setCurrentStep("reward");
             }}
             onIncorrect={handleIncorrect}
@@ -456,7 +463,6 @@ export function LessonShellScreen({
         return (
           <BusinessFundamentalsBossCheck
             onComplete={() => {
-              completeLesson(lesson.id);
               setCurrentStep("reward");
             }}
             onIncorrect={handleIncorrect}
@@ -472,7 +478,6 @@ export function LessonShellScreen({
         return (
           <MarketCapRevenueBossCheck
             onComplete={() => {
-              completeLesson(lesson.id);
               setCurrentStep("reward");
             }}
             onIncorrect={handleIncorrect}
@@ -488,7 +493,6 @@ export function LessonShellScreen({
         return (
           <EpsPeBossCheck
             onComplete={() => {
-              completeLesson(lesson.id);
               setCurrentStep("reward");
             }}
             onIncorrect={handleIncorrect}
@@ -504,7 +508,6 @@ export function LessonShellScreen({
         return (
           <PuttingItTogetherBossCheck
             onComplete={() => {
-              completeLesson(lesson.id);
               setCurrentStep("reward");
             }}
             onIncorrect={handleIncorrect}
@@ -520,7 +523,6 @@ export function LessonShellScreen({
         return (
           <FinalMasteryBossCheck
             onComplete={() => {
-              completeLesson(lesson.id);
               setCurrentStep("reward");
             }}
             onIncorrect={handleIncorrect}
@@ -536,7 +538,6 @@ export function LessonShellScreen({
         <LessonCheckStep
           content={experience.check}
           onContinue={() => {
-            completeLesson(lesson.id);
             setCurrentStep("reward");
           }}
           onIncorrect={handleIncorrect}
@@ -553,14 +554,14 @@ export function LessonShellScreen({
         isBossLesson={lesson.isBoss}
         lessonTitle={lesson.title}
         masteryTags={experience.masteryTags ?? []}
-        moduleCompleted={Boolean(derivedModule?.completed)}
-        moduleProgressPercent={derivedModule?.progressPercent ?? 0}
+        moduleCompleted={Boolean(rewardDerivedModule?.completed)}
+        moduleProgressPercent={rewardDerivedModule?.progressPercent ?? 0}
         moduleTitle={module.title}
-        moduleProgressLabel={`${derivedModule?.completionCount ?? 0}/10 lessons completed in ${module.title}`}
-        nextUnlockTitle={derivedModule?.completed ? nextModule?.title ?? null : null}
+        moduleProgressLabel={`${courseState.completedLessons}/100 lessons completed`}
+        nextUnlockTitle={rewardDerivedModule?.completed ? rewardNextModule?.title ?? null : null}
         onContinue={() => {
-          const latestProgress = getStoredCourseProgress();
-          const latestCourseState = deriveCourseState(latestProgress);
+          const completedProgress = completeLesson(lesson.id);
+          const latestCourseState = deriveCourseState(completedProgress);
 
           if (latestCourseState.allLessonsCompleted) {
             navigateWithJourney(router, "/completion", "milestone");
@@ -569,11 +570,11 @@ export function LessonShellScreen({
 
           navigateWithJourney(
             router,
-            getNextLessonRoute(latestProgress),
-            derivedModule?.completed ? "milestone" : "lesson",
+            getNextLessonRoute(completedProgress),
+            rewardDerivedModule?.completed ? "milestone" : "lesson",
           );
         }}
-        rankLabel={courseState.rank}
+        rankLabel={rewardCourseState.rank}
       />
     );
   }

@@ -252,8 +252,10 @@ export function openLesson(lessonId: string) {
   });
 }
 
-export function completeLesson(lessonId: string) {
-  const progress = getStoredCourseProgress();
+export function getProgressWithCompletedLesson(
+  progress: CourseProgressRecord,
+  lessonId: string,
+) {
   const today = getLocalDayKey();
   let streakCount = progress.streakCount;
 
@@ -270,15 +272,15 @@ export function completeLesson(lessonId: string) {
       return progress;
     }
 
-    return saveStoredCourseProgress({
+    return {
       ...progress,
       lastOpenedLessonId: lessonId,
       lastStreakActiveOn: today,
       streakCount,
-    });
+    };
   }
 
-  const next: CourseProgressRecord = {
+  return {
     ...progress,
     completedLessonIds: [...progress.completedLessonIds, lessonId],
     hearts: progress.hearts,
@@ -288,6 +290,15 @@ export function completeLesson(lessonId: string) {
     streakCount,
     totalXp: progress.totalXp + 10,
   };
+}
+
+export function completeLesson(lessonId: string) {
+  const progress = getStoredCourseProgress();
+  const next = getProgressWithCompletedLesson(progress, lessonId);
+
+  if (next === progress) {
+    return progress;
+  }
 
   return saveStoredCourseProgress(next);
 }
