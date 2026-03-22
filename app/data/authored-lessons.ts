@@ -1185,7 +1185,7 @@ export const authoredLessonExperiences: Record<string, AuthoredLessonExperience>
       mechanicSummary:
         "Tap the chart frame and place the Time and Price labels onto the right axes.",
       prompt: "Place the labels onto the chart.",
-      question: "What does a stock chart mainly show?",
+      question: "",
       activityKind: "chart-lab",
       activityData: {
         variant: "axes",
@@ -1194,35 +1194,15 @@ export const authoredLessonExperiences: Record<string, AuthoredLessonExperience>
           { id: "price", label: "Price", target: "y-axis" },
         ],
       },
+      useActivityAsPractice: true,
+      actionLabel: "Continue to check",
+      readinessLabel: "Finish mapping the axes first",
       supportActivities: [
         "Tap the horizontal axis for time.",
         "Tap the vertical axis for price.",
         "Drop the labels after you identify each axis.",
       ],
-      options: [
-        choice("a", "Price over time", true, ""),
-        choice(
-          "b",
-          "Guaranteed future price",
-          false,
-          "chart-price-time",
-          "Charts show history, not a guaranteed future price.",
-        ),
-        choice(
-          "c",
-          "Company mission statement",
-          false,
-          "chart-price-time",
-          "A stock chart is not a mission statement view.",
-        ),
-        choice(
-          "d",
-          "Employee count only",
-          false,
-          "chart-price-time",
-          "A chart’s main job is to show price over time.",
-        ),
-      ],
+      options: [],
       explanation:
         "Correct. A stock chart mainly shows price over time.",
     },
@@ -1263,49 +1243,61 @@ export const authoredLessonExperiences: Record<string, AuthoredLessonExperience>
     practice: {
       mechanicTitle: "Chart chronology",
       mechanicSummary:
-        "Arrange three snapshots from earliest to latest and then scrub the chart animation from left to right.",
-      prompt: "Put these chart snapshots in time order.",
-      question: "Which side of the chart is later in time?",
-      activityKind: "sequence-lab",
+        "Tap the chart points and confirm which part of the line is earlier, middle, and latest.",
+      prompt: "Tap the chart and compare earlier versus later points.",
+      question: "",
+      activityKind: "chart-lab",
       activityData: {
-        title: "Earliest to latest",
-        steps: [
+        variant: "point-compare",
+        chartPoints: [28, 38, 34, 46, 58, 52, 70, 82],
+        markers: [
           {
-            id: "early-snapshot",
-            label: "Early snapshot",
-            description: "Only the first part of the move is visible.",
-            points: [28, 38, 34, 46],
+            id: "earlier-point",
+            badge: "A",
+            label: "Earlier point",
+            index: 1,
+            tone: "secondary",
+            timeLabel: "Earlier in time",
+            priceLabel: "Left side of the chart",
+            detail: "This point appears earlier because it sits farther left.",
+            support:
+              "Charts usually move from left to right. Earlier points appear first, then later points extend farther right.",
           },
           {
-            id: "middle-snapshot",
-            label: "Middle snapshot",
-            description: "The chart has more history, including a pullback.",
-            points: [28, 38, 34, 46, 58, 52],
+            id: "middle-point",
+            badge: "B",
+            label: "Middle point",
+            index: 4,
+            tone: "primary",
+            timeLabel: "Middle of the move",
+            priceLabel: "Not the newest point",
+            detail: "This point has more history than the early one, but the chart still continues after it.",
+            support:
+              "A middle point helps you see that time keeps flowing across the screen before the chart reaches the newest edge.",
           },
           {
-            id: "late-snapshot",
-            label: "Latest snapshot",
-            description: "The full path extends further to the right.",
-            points: [28, 38, 34, 46, 58, 52, 70, 82],
+            id: "latest-point",
+            badge: "C",
+            label: "Latest point",
+            index: 7,
+            tone: "primary",
+            timeLabel: "Latest visible point",
+            priceLabel: "Right edge of the chart",
+            detail: "This is the newest visible point because the line has extended farthest to the right.",
+            support:
+              "Later time usually appears on the right edge. That is where the newest visible point lives on most simple stock charts.",
           },
-        ],
-        orderedSteps: [
-          { id: "slot-1", label: "Earliest" },
-          { id: "slot-2", label: "Middle" },
-          { id: "slot-3", label: "Latest" },
         ],
       },
+      useActivityAsPractice: true,
+      actionLabel: "Continue to check",
+      readinessLabel: "Inspect the chart points first",
       supportActivities: [
-        "Order the snapshots.",
-        "Use the scrubber after ordering them.",
-        "Keep left as earlier and right as later.",
+        "Tap the earlier point.",
+        "Compare it with the middle point.",
+        "Finish on the latest point at the right edge.",
       ],
-      options: [
-        choice("a", "Left side", false, "chart-chronology", "The left side is earlier, not later."),
-        choice("b", "Right side", true, ""),
-        choice("c", "Top edge", false, "chart-chronology", "Top and bottom usually describe price, not time."),
-        choice("d", "Bottom edge", false, "chart-chronology", "Bottom and top are about vertical placement, not chronology."),
-      ],
+      options: [],
       explanation: "Right. Later points usually appear on the right side of the chart.",
     },
     check: {
@@ -1347,7 +1339,7 @@ export const authoredLessonExperiences: Record<string, AuthoredLessonExperience>
       mechanicSummary:
         "Compare chart points and attach higher/lower tags before answering the price question.",
       prompt: "Which point is more expensive?",
-      question: "If one point sits higher on the y-axis, what usually changed?",
+      question: "",
       activityKind: "chart-lab",
       activityData: {
         variant: "point-compare",
@@ -1355,17 +1347,15 @@ export const authoredLessonExperiences: Record<string, AuthoredLessonExperience>
         chartPoints: [18, 26, 34, 52, 61, 78],
         tags: ["Higher price", "Lower price"],
       },
+      useActivityAsPractice: true,
+      actionLabel: "Continue to check",
+      readinessLabel: "Compare the points first",
       supportActivities: [
         "Compare the two points.",
         "Place the higher/lower tags.",
         "Keep time and price separate in your head.",
       ],
-      options: [
-        choice("a", "Price is higher", true, ""),
-        choice("b", "Time went backward", false, "vertical-price-reading", "That mixes up vertical price with horizontal time."),
-        choice("c", "Volume disappeared", false, "vertical-price-reading", "The y-axis height here is about price, not volume."),
-        choice("d", "Revenue doubled automatically", false, "vertical-price-reading", "Vertical position on the chart does not automatically mean anything about revenue."),
-      ],
+      options: [],
       explanation: "Correct. A higher point on the y-axis usually means a higher price.",
     },
     check: {
@@ -1407,24 +1397,22 @@ export const authoredLessonExperiences: Record<string, AuthoredLessonExperience>
       mechanicSummary:
         "Trace the path, then pick the broad description that fits it best.",
       prompt: "Trace the chart and describe the broad path.",
-      question: "Which summary best fits this line chart?",
+      question: "",
       activityKind: "chart-lab",
       activityData: {
         variant: "trace-path",
         chartPoints: [20, 28, 36, 45, 60, 72, 84],
         summaryChoices: ["Mostly rising over time", "Guaranteed to keep rising", "No price movement at all"],
       },
+      useActivityAsPractice: true,
+      actionLabel: "Continue to check",
+      readinessLabel: "Trace the chart first",
       supportActivities: [
         "Trace first.",
         "Summarize second.",
         "Avoid prediction language.",
       ],
-      options: [
-        choice("a", "Mostly rising over time", true, ""),
-        choice("b", "Guaranteed to keep rising", false, "line-chart-reading", "The chart can look mostly rising without guaranteeing the future."),
-        choice("c", "Means the company is perfect", false, "line-chart-reading", "A line chart does not prove business perfection."),
-        choice("d", "Shows no price movement at all", false, "line-chart-reading", "That ignores the visible movement."),
-      ],
+      options: [],
       explanation: "Correct. This chart is best described as mostly rising over time.",
     },
     check: {
@@ -1466,7 +1454,7 @@ export const authoredLessonExperiences: Record<string, AuthoredLessonExperience>
       mechanicSummary:
         "Sort mini charts into rising, falling, and flat, then lock in the simplest direction word.",
       prompt: "Sort these mini charts into direction buckets.",
-      question: "Which word best describes a chart with little overall movement?",
+      question: "",
       activityKind: "bucket-sort",
       activityData: {
         title: "Chart directions",
@@ -1509,17 +1497,15 @@ export const authoredLessonExperiences: Record<string, AuthoredLessonExperience>
           },
         ],
       },
+      useActivityAsPractice: true,
+      actionLabel: "Continue to check",
+      readinessLabel: "Sort every chart first",
       supportActivities: [
         "Sort the charts quickly.",
         "Check the direction badge.",
         "Focus on overall movement, not tiny noise.",
       ],
-      options: [
-        choice("a", "Flat", true, ""),
-        choice("b", "Explosive", false, "direction-classification", "That is not the right word for little overall movement."),
-        choice("c", "Guaranteed", false, "direction-classification", "Guaranteed is not a chart direction."),
-        choice("d", "Earnings-based", false, "direction-classification", "That is not a direction label."),
-      ],
+      options: [],
       explanation: "Correct. Little overall movement is best described as flat.",
     },
     check: {
@@ -1561,24 +1547,22 @@ export const authoredLessonExperiences: Record<string, AuthoredLessonExperience>
       mechanicSummary:
         "Tap the high and low points on the chart and reveal the visible range.",
       prompt: "Find the highest point and the lowest point.",
-      question: "What does the highest visible point on a chart show?",
+      question: "",
       activityKind: "chart-lab",
       activityData: {
         variant: "high-low",
         points: ["Peak", "Low", "Middle pullback"],
         chartPoints: [28, 72, 46, 32, 78],
       },
+      useActivityAsPractice: true,
+      actionLabel: "Continue to check",
+      readinessLabel: "Find the peak and low first",
       supportActivities: [
         "Tap the peak first.",
         "Tap the low next.",
         "Use the revealed range as your check.",
       ],
-      options: [
-        choice("a", "The peak price in the displayed range", true, ""),
-        choice("b", "The next guaranteed price", false, "chart-range-extremes", "The highest visible point is not a promise about what comes next."),
-        choice("c", "The company’s profit margin", false, "chart-range-extremes", "A chart peak is about price on the screen, not margin."),
-        choice("d", "The number of shares outstanding", false, "chart-range-extremes", "That is not what the point represents."),
-      ],
+      options: [],
       explanation: "Correct. The highest visible point shows the peak price in the displayed range.",
     },
     check: {
@@ -1620,7 +1604,7 @@ export const authoredLessonExperiences: Record<string, AuthoredLessonExperience>
       mechanicSummary:
         "Compare three rising segments and rank them from slowest to fastest.",
       prompt: "Rank the rises from slowest to fastest.",
-      question: "Which chart segment suggests faster upward movement?",
+      question: "",
       activityKind: "sequence-lab",
       activityData: {
         title: "Slowest to fastest",
@@ -1645,17 +1629,15 @@ export const authoredLessonExperiences: Record<string, AuthoredLessonExperience>
           },
         ],
       },
+      useActivityAsPractice: true,
+      actionLabel: "Continue to check",
+      readinessLabel: "Rank every rise first",
       supportActivities: [
         "Start with the flattest rise.",
         "Finish with the steepest rise.",
         "Use pace, not just direction.",
       ],
-      options: [
-        choice("a", "The steeper rise", true, ""),
-        choice("b", "The flattest line", false, "slope-and-pace", "A flatter line suggests slower movement, not faster movement."),
-        choice("c", "The side label", false, "slope-and-pace", "The pace comes from the slope, not the label."),
-        choice("d", "The oldest data point", false, "slope-and-pace", "Oldest does not mean fastest."),
-      ],
+      options: [],
       explanation: "Correct. The steeper rise usually suggests faster upward movement.",
     },
     check: {
@@ -1697,7 +1679,7 @@ export const authoredLessonExperiences: Record<string, AuthoredLessonExperience>
       mechanicSummary:
         "Flip between the two chart styles and match each one to the right purpose.",
       prompt: "Match the chart format to its best use.",
-      question: "Which format is usually easier for a beginner’s first chart read?",
+      question: "",
       activityKind: "chart-lab",
       activityData: {
         variant: "toggle-view",
@@ -1708,17 +1690,15 @@ export const authoredLessonExperiences: Record<string, AuthoredLessonExperience>
           { clue: "more detailed session info", answer: "Candlestick chart" },
         ],
       },
+      useActivityAsPractice: true,
+      actionLabel: "Continue to check",
+      readinessLabel: "Compare the chart views first",
       supportActivities: [
         "Flip the view once.",
         "Match each purpose after comparing them.",
         "Keep the beginner-first use case in mind.",
       ],
-      options: [
-        choice("a", "Line chart", true, ""),
-        choice("b", "Candlestick chart only", false, "chart-format-basics", "Candlesticks add detail, but line charts are usually simpler for a first read."),
-        choice("c", "Spreadsheet view", false, "chart-format-basics", "That is not the beginner chart format here."),
-        choice("d", "News ticker", false, "chart-format-basics", "That is not a chart format."),
-      ],
+      options: [],
       explanation: "Correct. A line chart is usually easier for a beginner’s first chart read.",
     },
     check: {
@@ -1760,7 +1740,7 @@ export const authoredLessonExperiences: Record<string, AuthoredLessonExperience>
       mechanicSummary:
         "Sort interpretation sentences by whether they stay careful or overclaim the future.",
       prompt: "Which statement is more careful?",
-      question: "Which statement is most accurate?",
+      question: "",
       activityKind: "bucket-sort",
       activityData: {
         title: "Interpretation style",
@@ -1778,17 +1758,15 @@ export const authoredLessonExperiences: Record<string, AuthoredLessonExperience>
           },
         ],
       },
+      useActivityAsPractice: true,
+      actionLabel: "Continue to check",
+      readinessLabel: "Sort the statements first",
       supportActivities: [
         "Choose the careful sentence first.",
         "Put certainty claims in the overconfident bucket.",
         "Keep chart history separate from future certainty.",
       ],
-      options: [
-        choice("a", "Charts show the future exactly", false, "chart-history-not-certainty", "Charts do not show the future exactly."),
-        choice("b", "Charts show what happened and help with interpretation", true, ""),
-        choice("c", "Charts replace all business analysis", false, "chart-history-not-certainty", "Charts can help, but they do not replace all business context."),
-        choice("d", "Charts guarantee certainty", false, "chart-history-not-certainty", "Charts do not guarantee certainty."),
-      ],
+      options: [],
       explanation:
         "Correct. Charts show what happened and help with interpretation, but they do not guarantee the future.",
     },
@@ -1918,7 +1896,7 @@ const authoredLearnPanelsByLesson: Record<string, LearnPanel[]> = {
     learnPanel(
       "ownership-comparison",
       "Switch the share count",
-      "Example company: 1,000 total shares. Switch between 1, 24, and 100 shares to see how the same company slice changes.",
+      "Example company: 10,000 total shares. Switch between 1, 100, and 1,000 shares to see how your company slice changes.",
       {
         eyebrow: "Learn",
         activityKind: "ownership-board",
@@ -1926,21 +1904,28 @@ const authoredLearnPanelsByLesson: Record<string, LearnPanel[]> = {
         activityData: {
           variant: "ownership-example",
           presentation: "growth",
-          totalShares: 1000,
+          totalShares: 10000,
           states: [
             {
               id: "one-share",
               label: "1 share",
               shares: 1,
-              detail: "1 out of 1,000 shares = 0.1% ownership.",
+              detail: "1 out of 10,000 shares = 0.01% ownership.",
               support: "Small does not mean fake. It is still ownership.",
             },
             {
-              id: "twenty-four-shares",
-              label: "24 shares",
-              shares: 24,
-              detail: "24 out of 1,000 shares = 2.4%.",
+              id: "one-hundred-shares",
+              label: "100 shares",
+              shares: 100,
+              detail: "100 out of 10,000 shares = 1.0%.",
               support: "In the same company, more shares means a bigger ownership slice.",
+            },
+            {
+              id: "one-thousand-shares",
+              label: "1,000 shares",
+              shares: 1000,
+              detail: "1,000 out of 10,000 shares = 10.0%.",
+              support: "That is much bigger than 1 share, but it is still only part of the company.",
             },
           ],
         },
@@ -1954,7 +1939,7 @@ const authoredLearnPanelsByLesson: Record<string, LearnPanel[]> = {
         eyebrow: "Lock-in",
         activityKind: "reveal-card",
         activityData: {
-          statement: "Owning 100 of 1,000 shares sounds big.",
+          statement: "Owning 1,000 of 10,000 shares sounds big.",
           actionLabel: "What does that mean?",
           revealTitle: "Still not the whole company",
           revealCopy:
@@ -2469,14 +2454,53 @@ const authoredLearnPanelsByLesson: Record<string, LearnPanel[]> = {
       {
         eyebrow: "Apply",
         activityKind: "return-builder",
-        activityStartValue: 28,
         activityData: {
-          buy: 22,
-          sell: 30,
+          variant: "boss-return-map",
           cases: [
-            "Price higher than your buy = price gain",
-            "Cash from the company = dividend",
-            "Same sell price = break-even",
+            {
+              id: "price-gain",
+              label: "Sold above your buy",
+              source: "Market price",
+              buy: 22,
+              sell: 30,
+              outcome: "Gain",
+              amount: "+8",
+              explanation: "Selling above your buy creates a price gain.",
+              support: "This return comes from the market price moving higher before you sell.",
+            },
+            {
+              id: "dividend",
+              label: "Company paid you cash",
+              source: "Company cash",
+              buy: 22,
+              sell: 22,
+              outcome: "Dividend",
+              amount: "$1 cash",
+              explanation: "A dividend is cash paid from the company to shareholders.",
+              support: "The return came from the business paying cash out, not from selling at a higher price.",
+            },
+            {
+              id: "break-even",
+              label: "Sold at the same price",
+              source: "Market price",
+              buy: 22,
+              sell: 22,
+              outcome: "Break-even",
+              amount: "0",
+              explanation: "If the buy and sell prices match, the price result is break-even.",
+              support: "There is no price gain or loss when the sale price matches what you paid.",
+            },
+            {
+              id: "loss",
+              label: "Sold below your buy",
+              source: "Market price",
+              buy: 22,
+              sell: 17,
+              outcome: "Loss",
+              amount: "-5",
+              explanation: "Selling below your buy creates a loss.",
+              support: "This return came from the market price moving against you before you sold.",
+            },
           ],
         },
         noteLabel: "Checkpoint",
@@ -3256,7 +3280,7 @@ const normalizedTargetLearnPanelsByLesson: Record<string, LearnPanel[]> = {
         activityKind: "news-chart",
         activityStartValue: 60,
         activityData: {
-          variant: "pressure-balance",
+          variant: "pressure-crowd",
           scenarios: [
             "Demand jumps after good news",
             "Heavy selling after bad results",
@@ -3378,15 +3402,31 @@ const normalizedTargetLearnPanelsByLesson: Record<string, LearnPanel[]> = {
     learnPanel(
       "asset-map",
       "Stocks, bonds, and savings do different jobs",
-      "Tap through the three relationship types before you sort them.",
+      "Match each need to the product that fits it best so the differences feel real.",
       {
         eyebrow: "Learn",
-        activityKind: "checklist",
+        activityKind: "tap-sort",
         activityData: {
-          items: [
-            "Stock = ownership",
-            "Bond = lending",
-            "Savings = stored cash",
+          buckets: ["Stock", "Bond", "Savings"],
+          cards: [
+            {
+              id: "own-business",
+              label: "You want to own part of a company",
+              target: "Stock",
+              description: "This is an ownership relationship, not lending or cash storage.",
+            },
+            {
+              id: "lend-money",
+              label: "You want fixed interest and repayment",
+              target: "Bond",
+              description: "This is a lending relationship.",
+            },
+            {
+              id: "park-cash",
+              label: "You want to hold cash in an account",
+              target: "Savings",
+              description: "This is about storing cash safely and staying liquid.",
+            },
           ],
         },
         noteLabel: "What this means",
@@ -3491,17 +3531,17 @@ const normalizedTargetLearnPanelsByLesson: Record<string, LearnPanel[]> = {
     learnPanel(
       "mindset-order",
       "Careful analysis has an order",
-      "Build the sequence once so the process feels automatic.",
+      "Build the workflow one move at a time so the process feels automatic.",
       {
         eyebrow: "Learn",
-        activityKind: "sequence-lab",
+        activityKind: "checklist",
         activityData: {
-          steps: [
-            { id: "observe", label: "Observe", description: "See what is there before you explain it." },
-            { id: "chart", label: "Check the chart", description: "Read the visible price behavior." },
-            { id: "business", label: "Check the business context", description: "Add the company lens next." },
-            { id: "change", label: "Ask what changed", description: "Look for the shift in expectations." },
-            { id: "careful", label: "Form a careful interpretation", description: "Only now is it time to summarize." },
+          orderedItems: [
+            { id: "observe", label: "Observe", detail: "See what is there before you explain it." },
+            { id: "chart", label: "Check the chart", detail: "Read the visible price behavior." },
+            { id: "business", label: "Check the business context", detail: "Add the company lens next." },
+            { id: "change", label: "Ask what changed", detail: "Look for the shift in expectations." },
+            { id: "careful", label: "Form a careful interpretation", detail: "Only now is it time to summarize." },
           ],
         },
         noteLabel: "What this means",
@@ -3557,20 +3597,20 @@ const normalizedTargetLearnPanelsByLesson: Record<string, LearnPanel[]> = {
           steps: [
             {
               id: "early-snapshot",
-              label: "Early snapshot",
-              description: "Only the first stretch of the move is visible.",
+              label: "Snapshot A",
+              description: "Shortest chart view. Only the first part of the move has appeared.",
               points: [28, 38, 34, 46],
             },
             {
               id: "middle-snapshot",
-              label: "Middle snapshot",
-              description: "More history appears, including a pullback.",
+              label: "Snapshot B",
+              description: "More of the path is visible, including a middle pullback.",
               points: [28, 38, 34, 46, 58, 52],
             },
             {
               id: "late-snapshot",
-              label: "Latest snapshot",
-              description: "The full move extends farther right.",
+              label: "Snapshot C",
+              description: "The line stretches farthest right and ends after the strongest rise.",
               points: [28, 38, 34, 46, 58, 52, 70, 82],
             },
           ],
@@ -4112,4 +4152,23 @@ for (const [lessonId, patch] of Object.entries(normalizedTargetCheckPatches)) {
   if (lesson) {
     Object.assign(lesson.check, patch);
   }
+}
+
+for (const [lessonId, lesson] of Object.entries(authoredLessonExperiences)) {
+  if (
+    !lessonId.startsWith("foundations-") &&
+    !lessonId.startsWith("chart-basics-")
+  ) {
+    continue;
+  }
+
+  if (lesson.practice.activityKind === "bucket-sort") {
+    lesson.practice.activityKind = "tap-sort";
+  }
+
+  lesson.learn.panels?.forEach((panel) => {
+    if (panel.activityKind === "bucket-sort") {
+      panel.activityKind = "tap-sort";
+    }
+  });
 }

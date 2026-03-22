@@ -45,6 +45,14 @@ export type PracticeOption = {
   feedback?: string;
 };
 
+export type RapidFireCase = {
+  id: string;
+  prompt: string;
+  options: PracticeOption[];
+  explanation: string;
+  reviewPrompt: string;
+};
+
 export type LearnPanel = {
   id: string;
   title: string;
@@ -69,6 +77,7 @@ export type PracticeActivityKind =
   | "checklist"
   | "portfolio"
   | "chart-lab"
+  | "tap-sort"
   | "bucket-sort"
   | "sequence-lab"
   | "zone-map"
@@ -118,6 +127,8 @@ export type CheckContent = {
   voiceReady?: boolean;
   explanation: string;
   reviewPrompt: string;
+  variant?: "rapid-fire";
+  rapidFireCases?: RapidFireCase[];
 };
 
 export const lessonCatalog: LessonMeta[] = [

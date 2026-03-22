@@ -20,20 +20,22 @@ import { LessonNode } from "./lesson-node";
 import { ProgressBar } from "./progress-bar";
 
 type ModuleSectionProps = {
+  allowFreeJump?: boolean;
   module: DerivedModule;
 };
 
+// Stock-chart inspired path: impulse moves up with healthy pullbacks, like a bull market
 const lessonPath = [
-  { x: 6, y: 81 },
-  { x: 15, y: 71 },
-  { x: 26, y: 60 },
-  { x: 37, y: 66 },
-  { x: 48, y: 53 },
-  { x: 59, y: 43 },
-  { x: 70, y: 56 },
-  { x: 80, y: 38 },
-  { x: 89, y: 28 },
-  { x: 95, y: 20 },
+  { x: 7,  y: 87 },  // Entry point
+  { x: 18, y: 71 },  // Strong initial move
+  { x: 28, y: 77 },  // Pullback (healthy correction)
+  { x: 40, y: 60 },  // Recovery + new high
+  { x: 50, y: 65 },  // Consolidation
+  { x: 61, y: 46 },  // Breakout
+  { x: 72, y: 52 },  // Retest
+  { x: 82, y: 32 },  // Strong momentum push
+  { x: 90, y: 38 },  // Brief pause near highs
+  { x: 96, y: 16 },  // All-time high (boss)
 ];
 
 const moduleIcons = {
@@ -63,7 +65,7 @@ function buildCurvePath() {
 
 const pathD = buildCurvePath();
 
-export function ModuleSection({ module }: ModuleSectionProps) {
+export function ModuleSection({ allowFreeJump = false, module }: ModuleSectionProps) {
   const Icon = moduleIcons[module.icon] ?? CircleIcon;
   const [animatedProgress, setAnimatedProgress] = useState(0);
   const [isAdvancing, setIsAdvancing] = useState(false);
@@ -171,152 +173,161 @@ export function ModuleSection({ module }: ModuleSectionProps) {
   }, [module.id]);
 
   return (
-    <section className={`relative ${module.locked ? "opacity-70" : ""}`} style={sectionStyle}>
-      <div className="grid gap-4 lg:grid-cols-[60px_minmax(0,1fr)]">
-        <div className="rounded-[1.45rem] border border-white/70 bg-white/78 px-2 py-5 shadow-[0_10px_24px_rgba(15,23,42,0.03)]">
-          <div className="flex h-full flex-col items-center justify-between gap-5">
+    <section className={`relative ${module.locked && !allowFreeJump ? "opacity-70" : ""}`} style={sectionStyle}>
+      {/* Open roadmap — no hard box, path flows on the page */}
+      <div
+        className={`roadmap-shell relative overflow-hidden rounded-[1.5rem] ${
+          isReturnFocused ? "roadmap-shell--focus" : ""
+        } ${isAdvancing ? "roadmap-shell--advancing" : ""} ${isUnlocking ? "roadmap-shell--unlock" : ""}`}
+        data-advancing={isAdvancing}
+        data-return-focus={isReturnFocused}
+        data-unlocking={isUnlocking}
+        style={{ height: 640 }}
+      >
+        {/* Two atmospheric glow zones: bottom-left origin, top-right summit */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `
+              radial-gradient(ellipse at 14% 92%, ${module.accentSoft}50 0%, transparent 44%),
+              radial-gradient(ellipse at 86% 6%, ${module.accentSoftAlt}60 0%, transparent 40%)
+            `,
+          }}
+        />
+        <div className="course-grid absolute inset-0 opacity-18" />
+
+        {/* Header: module icon + title on left, progress on right */}
+        <div className="absolute inset-x-7 top-6 z-10 flex items-start justify-between gap-4">
+          <div className="flex items-center gap-3">
             <span
-              className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/80 bg-white shadow-[0_10px_22px_rgba(15,23,42,0.06)]"
+              className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl border border-white/80 bg-white shadow-[0_8px_22px_rgba(15,23,42,0.10)]"
               style={{ color: module.accentColor }}
             >
-              <Icon className="h-4.5 w-4.5" />
+              <Icon className="h-5 w-5" />
             </span>
-            <div className="[writing-mode:vertical-rl] rotate-180 text-center">
+            <div>
               <p
-                className="text-[10px] font-semibold uppercase tracking-[0.18em]"
+                className="text-[10px] font-black uppercase tracking-[0.18em]"
                 style={{ color: module.accentColor }}
               >
-                Module {String(module.id).padStart(2, "0")}
+                Module {String(module.id).padStart(2, "0")} · Active path
               </p>
-              <p className="mt-2.5 text-xs font-semibold text-slate-700">{module.title}</p>
-            </div>
-          </div>
-        </div>
-
-        <div
-          className={`surface-lift roadmap-shell relative h-[500px] overflow-hidden rounded-[2.25rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(255,255,255,0.92)_100%)] shadow-[0_28px_56px_rgba(15,23,42,0.07)] ${
-            isReturnFocused ? "roadmap-shell--focus" : ""
-          } ${isAdvancing ? "roadmap-shell--advancing" : ""} ${isUnlocking ? "roadmap-shell--unlock" : ""}`}
-          data-advancing={isAdvancing}
-          data-return-focus={isReturnFocused}
-          data-unlocking={isUnlocking}
-        >
-          <div className="course-grid absolute inset-0 opacity-55" />
-          <div
-            className="absolute inset-x-10 top-8 h-36 rounded-[2rem] blur-3xl"
-            style={{
-              background: `linear-gradient(135deg, ${module.accentSoftAlt} 0%, ${module.accentSoft} 100%)`,
-            }}
-          />
-          <div className="absolute inset-x-8 top-7 z-10">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-                Active path
-              </p>
-              <h2 className="mt-2 text-[2rem] font-semibold tracking-[-0.04em] text-slate-950">
+              <h2 className="text-xl font-black leading-tight tracking-[-0.03em] text-[#172b4d]">
                 {module.title}
               </h2>
             </div>
           </div>
-          <div
-            className={`roadmap-progress-band absolute left-1/2 top-8 z-10 w-[280px] -translate-x-1/2 ${
-              isAdvancing ? "is-advancing" : ""
-            }`}
-          >
-            <div className="mb-2 flex items-center justify-between text-xs font-medium text-slate-500">
+
+          {/* Progress: right-aligned like a price target */}
+          <div className={`roadmap-progress-band w-[200px] flex-shrink-0 ${isAdvancing ? "is-advancing" : ""}`}>
+            <div className="mb-1.5 flex items-center justify-between text-xs font-bold text-slate-500">
               <span>
-                <AnimatedNumber className="progress-value live" value={module.completionCount} />/10 complete
+                <AnimatedNumber className="progress-value live" value={module.completionCount} />/10 done
               </span>
               <AnimatedNumber
-                className="progress-value live text-slate-900"
+                className="progress-value live font-black text-[#172b4d]"
                 suffix="%"
                 value={module.progressPercent}
               />
             </div>
             <ProgressBar value={module.progressPercent} />
           </div>
-          <div
-            className="absolute inset-x-8 top-[28%] h-px opacity-18"
-            style={{ backgroundColor: module.accentColor }}
-          />
-          <div
-            className="absolute inset-x-8 top-[58%] h-px opacity-16"
-            style={{ backgroundColor: module.accentColor }}
-          />
-          <svg
-            aria-hidden="true"
-            className="absolute inset-0 h-full w-full overflow-visible"
-            preserveAspectRatio="none"
-            viewBox="0 0 100 100"
-          >
-            <defs>
-              <linearGradient id={gradientId} x1="0%" x2="100%" y1="0%" y2="0%">
-                <stop offset="0%" stopColor={module.accentColor} stopOpacity="0.12" />
-                <stop offset="50%" stopColor="#ffffff" stopOpacity="0.92" />
-                <stop offset="100%" stopColor={module.accentColor} stopOpacity="0.16" />
-              </linearGradient>
-            </defs>
-            <path
-              d={pathD}
-              fill="none"
-              opacity="0.16"
-              stroke={module.accentColor}
-              strokeLinecap="round"
-              strokeWidth="2.4"
-              pathLength="100"
-            />
-            <path
-              d={pathD}
-              fill="none"
-              opacity="0.3"
-              stroke={module.accentColor}
-              strokeLinecap="round"
-              strokeWidth="0.9"
-              pathLength="100"
-            />
-            <path
-              className="path-progress-line"
-              d={pathD}
-              fill="none"
-              opacity="0.95"
-              pathLength="100"
-              stroke={module.accentColor}
-              strokeDasharray="100"
-              strokeDashoffset={100 - animatedProgress}
-              strokeLinecap="round"
-              strokeWidth="2.1"
-              style={{
-                filter: `drop-shadow(0 0 10px ${module.accentColor}44)`,
-              }}
-            />
-            <path
-              className={`path-energy-line ${isAdvancing || isReturnFocused || isUnlocking ? "is-active" : ""}`}
-              d={pathD}
-              fill="none"
-              pathLength="100"
-              stroke={`url(#${gradientId})`}
-              strokeDasharray="12 18"
-              strokeDashoffset="0"
-              strokeLinecap="round"
-              strokeWidth="1.4"
-            />
-          </svg>
-
-          {lessonItems.map((lesson, index) => (
-            <LessonNode
-              key={lesson.id}
-              accentColor={module.accentColor}
-              estimatedTime={lesson.estimatedTime}
-              href={lesson.route}
-              isBoss={lesson.isBoss}
-              lessonNumber={lesson.lessonNumber}
-              position={lessonPath[index]}
-              sequenceKey={sequenceKey}
-              state={lesson.state}
-              title={lesson.title}
-            />
-          ))}
         </div>
+
+        {/* Chart level lines — evoke support / resistance zones */}
+        <div
+          className="absolute inset-x-6 top-[30%] h-px"
+          style={{ background: `linear-gradient(90deg, transparent 0%, ${module.accentColor}28 25%, ${module.accentColor}28 75%, transparent 100%)` }}
+        />
+        <div
+          className="absolute inset-x-6 top-[56%] h-px"
+          style={{ background: `linear-gradient(90deg, transparent 0%, ${module.accentColor}22 25%, ${module.accentColor}22 75%, transparent 100%)` }}
+        />
+        <div
+          className="absolute inset-x-6 top-[78%] h-px"
+          style={{ background: `linear-gradient(90deg, transparent 0%, ${module.accentColor}16 25%, ${module.accentColor}16 75%, transparent 100%)` }}
+        />
+
+        {/* SVG: stock-chart path with impulse moves and pullbacks */}
+        <svg
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full overflow-visible"
+          preserveAspectRatio="none"
+          viewBox="0 0 100 100"
+        >
+          <defs>
+            <linearGradient id={gradientId} x1="0%" x2="100%" y1="100%" y2="0%">
+              <stop offset="0%" stopColor={module.accentColor} stopOpacity="0.06" />
+              <stop offset="55%" stopColor={module.accentColor} stopOpacity="0.22" />
+              <stop offset="100%" stopColor={module.accentColor} stopOpacity="0.08" />
+            </linearGradient>
+          </defs>
+          {/* Track: ghost of the full path */}
+          <path
+            d={pathD}
+            fill="none"
+            opacity="0.13"
+            stroke={module.accentColor}
+            strokeLinecap="round"
+            strokeWidth="3.2"
+            pathLength="100"
+          />
+          {/* Fine inner track */}
+          <path
+            d={pathD}
+            fill="none"
+            opacity="0.20"
+            stroke={module.accentColor}
+            strokeLinecap="round"
+            strokeWidth="0.8"
+            pathLength="100"
+          />
+          {/* Progress line — the completed portion glows */}
+          <path
+            className="path-progress-line"
+            d={pathD}
+            fill="none"
+            opacity="1"
+            pathLength="100"
+            stroke={module.accentColor}
+            strokeDasharray="100"
+            strokeDashoffset={100 - animatedProgress}
+            strokeLinecap="round"
+            strokeWidth="3.0"
+            style={{
+              filter: `drop-shadow(0 0 10px ${module.accentColor}88)`,
+            }}
+          />
+          {/* Energy shimmer — animated when advancing */}
+          <path
+            className={`path-energy-line ${isAdvancing || isReturnFocused || isUnlocking ? "is-active" : ""}`}
+            d={pathD}
+            fill="none"
+            pathLength="100"
+            stroke={`url(#${gradientId})`}
+            strokeDasharray="10 20"
+            strokeDashoffset="0"
+            strokeLinecap="round"
+            strokeWidth="1.8"
+          />
+        </svg>
+
+        {/* Lesson nodes — milestone markers on the chart */}
+        {lessonItems.map((lesson, index) => (
+          <LessonNode
+            allowFreeJump={allowFreeJump}
+            key={lesson.id}
+            accentColor={module.accentColor}
+            estimatedTime={lesson.estimatedTime}
+            href={lesson.route}
+            isBoss={lesson.isBoss}
+            lessonNumber={lesson.lessonNumber}
+            position={lessonPath[index]}
+            sequenceKey={sequenceKey}
+            state={lesson.state}
+            title={lesson.title}
+          />
+        ))}
       </div>
     </section>
   );

@@ -5,6 +5,10 @@ import { practiceContent, type PracticeContent } from "../lib/course-data";
 import { triggerCorrect, triggerIncorrect, triggerXP } from "../lib/animations";
 import { LessonActivity } from "./lesson-activity";
 
+function capitalizeLead(value: string) {
+  return value.replace(/^([a-z])/, (letter) => letter.toUpperCase());
+}
+
 type LegacyLessonPracticeStepProps = {
   stepId: string;
   onContinue: () => void;
@@ -24,13 +28,11 @@ type LessonPracticeStepProps =
   | ModernLessonPracticeStepProps;
 
 export function LessonPracticeStep(props: LessonPracticeStepProps) {
-  let content: PracticeContent;
-
-  if ("stepId" in props && typeof props.stepId === "string") {
-    content = practiceContent[props.stepId] ?? practiceContent["1-2"];
-  } else {
-    content = props.content;
-  }
+  const content = (
+    "content" in props
+      ? props.content
+      : practiceContent[props.stepId] ?? practiceContent["1-2"]
+  ) as PracticeContent;
 
   const [activityReady, setActivityReady] = useState(false);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -100,14 +102,14 @@ export function LessonPracticeStep(props: LessonPracticeStepProps) {
 
       {/* Title */}
       <h2 style={{ fontSize: "clamp(22px,3vw,32px)", fontWeight: 900, color: "#172b4d", letterSpacing: "-0.5px", marginBottom: 8, lineHeight: 1.2 }}>
-        {content.mechanicTitle}
+        {capitalizeLead(content.mechanicTitle)}
       </h2>
-      <p style={{ fontSize: 16, color: "#6b7280", lineHeight: 1.6, marginBottom: 24 }}>{content.mechanicSummary}</p>
+      <p style={{ fontSize: 16, color: "#6b7280", lineHeight: 1.6, marginBottom: 24 }}>{capitalizeLead(content.mechanicSummary)}</p>
 
       {content.activityKind ? (
         <div style={{ marginBottom: 20 }}>
           <p style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "#9ca3af", marginBottom: 12 }}>
-            {content.prompt}
+            {capitalizeLead(content.prompt)}
           </p>
           <LessonActivity
             activityData={content.activityData}
@@ -119,7 +121,7 @@ export function LessonPracticeStep(props: LessonPracticeStepProps) {
 
       {hasQuestion ? (
         <div style={{ marginBottom: 20 }}>
-          <h3 style={{ fontSize: 20, fontWeight: 800, color: "#172b4d", marginBottom: 16, lineHeight: 1.3 }}>{content.question}</h3>
+          <h3 style={{ fontSize: 20, fontWeight: 800, color: "#172b4d", marginBottom: 16, lineHeight: 1.3 }}>{capitalizeLead(content.question)}</h3>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {content.options.map((option, idx) => {
               const active = selectedOption === option.id;
@@ -155,7 +157,7 @@ export function LessonPracticeStep(props: LessonPracticeStepProps) {
                   }}>
                     {showCorrect ? "✓" : showIncorrect ? "✗" : letters[idx]}
                   </span>
-                  {option.text}
+                  {capitalizeLead(option.text)}
                 </button>
               );
             })}
@@ -174,7 +176,7 @@ export function LessonPracticeStep(props: LessonPracticeStepProps) {
             {isCorrect ? "Correct! 🎉" : "Not quite"}
           </div>
           <div style={{ fontSize: 14, color: "#4b5563", lineHeight: 1.6 }}>
-            {selected?.feedback ?? content.explanation}
+            {capitalizeLead(selected?.feedback ?? content.explanation)}
           </div>
         </div>
       )}

@@ -2484,10 +2484,10 @@ const businessFundamentalsLessons: Record<string, AuthoredLessonExperience> = {
         eyebrow: "Learn",
         activityKind: "checklist",
         activityData: {
-          items: [
-            "How big is the business?",
-            "Is it growing?",
-            "Is it profitable?",
+          orderedItems: [
+            { id: "size", label: "How big is the business?", detail: "Start with the simplest size question." },
+            { id: "growth", label: "Is it growing?", detail: "Then check whether sales are expanding." },
+            { id: "profit", label: "Is it profitable?", detail: "Finish with what survives after costs." },
           ],
         },
       }),
@@ -2792,7 +2792,11 @@ const businessFundamentalsLessons: Record<string, AuthoredLessonExperience> = {
         eyebrow: "Learn",
         activityKind: "checklist",
         activityData: {
-          items: ["How much is it selling?", "How much is it keeping?", "How big is it?"],
+          orderedItems: [
+            { id: "selling", label: "How much is it selling?", detail: "Start with sales coming in." },
+            { id: "keeping", label: "How much is it keeping?", detail: "Then ask what survives after costs." },
+            { id: "size", label: "How big is it?", detail: "Keep company size as a separate question." },
+          ],
         },
       }),
       panel("mistake", "Do not ask one metric to answer every business question", "Each metric gives you one part of the picture.", {
@@ -2855,7 +2859,11 @@ const businessFundamentalsLessons: Record<string, AuthoredLessonExperience> = {
         eyebrow: "Learn",
         activityKind: "checklist",
         activityData: {
-          items: ["Expectation shift", "Price reaction", "Business report later"],
+          orderedItems: [
+            { id: "expectations", label: "Expectation shift", detail: "New information changes the outlook first." },
+            { id: "price", label: "Price reaction", detail: "The market reacts quickly next." },
+            { id: "report", label: "Business report later", detail: "The slower proof can arrive after that." },
+          ],
         },
       }),
       panel("mistake", "Do not assume price waits for every report", "Sometimes the market reacts to new expectations before the full numbers arrive.", {
@@ -2918,7 +2926,11 @@ const businessFundamentalsLessons: Record<string, AuthoredLessonExperience> = {
         eyebrow: "Learn",
         activityKind: "checklist",
         activityData: {
-          items: ["How big is it?", "Is it growing?", "Is it profitable?"],
+          orderedItems: [
+            { id: "size", label: "How big is it?", detail: "Start the snapshot with company size." },
+            { id: "growth", label: "Is it growing?", detail: "Then ask whether sales are expanding." },
+            { id: "profit", label: "Is it profitable?", detail: "Finish with what is left after costs." },
+          ],
         },
       }),
       panel("mistake", "Do not start with twenty metrics", "A strong beginner snapshot is compact and focused.", {
@@ -3244,8 +3256,14 @@ const marketCapAndRevenueLessons: Record<string, AuthoredLessonExperience> = {
       }),
       panel("learn", "Size asks how large the company is", "Growth asks how fast the business is expanding. The questions are related, but not the same.", {
         eyebrow: "Learn",
-        activityKind: "checklist",
-        activityData: { items: ["How big is it?", "How fast is it growing?"] },
+        activityKind: "tap-sort",
+        activityData: {
+          buckets: ["Size lens", "Growth lens"],
+          cards: [
+            { id: "size-question", label: "How big is it?", target: "Size lens", description: "This is the company-size question." },
+            { id: "growth-question", label: "How fast is it growing?", target: "Growth lens", description: "This is the business-growth question." },
+          ],
+        },
       }),
       panel("mistake", "Do not assume big means fast-growing", "Those dimensions need separate evidence.", {
         eyebrow: "Watch for",
@@ -3554,7 +3572,11 @@ const marketCapAndRevenueLessons: Record<string, AuthoredLessonExperience> = {
         eyebrow: "Learn",
         activityKind: "checklist",
         activityData: {
-          items: ["Who is bigger?", "Who is growing faster?", "What still needs context?"],
+          orderedItems: [
+            { id: "bigger", label: "Who is bigger?", detail: "Start with the size difference." },
+            { id: "growth", label: "Who is growing faster?", detail: "Then compare growth speed." },
+            { id: "context", label: "What still needs context?", detail: "Finish by asking what this quick compare still misses." },
+          ],
         },
       }),
     ],
@@ -3952,7 +3974,13 @@ const epsAndPeLessons: Record<string, AuthoredLessonExperience> = {
       panel("learn", "Sector context changes how ratios behave", "Different industries often trade on different expectations and economics.", {
         eyebrow: "Learn",
         activityKind: "checklist",
-        activityData: { items: ["Same industry?", "Similar economics?", "Comparable expectations?"] },
+        activityData: {
+          orderedItems: [
+            { id: "industry", label: "Same industry?", detail: "Start by checking whether the businesses really belong together." },
+            { id: "economics", label: "Similar economics?", detail: "Then compare how the businesses actually make money." },
+            { id: "expectations", label: "Comparable expectations?", detail: "Finish by checking whether the market is pricing similar stories." },
+          ],
+        },
       }),
     ],
     {
@@ -4058,8 +4086,15 @@ const epsAndPeLessons: Record<string, AuthoredLessonExperience> = {
       }),
       panel("learn", "These are different kinds of information", "One tells you about the stock price, one about business sales, and one about profit per share.", {
         eyebrow: "Learn",
-        activityKind: "checklist",
-        activityData: { items: ["Price", "Revenue", "EPS"] },
+        activityKind: "tap-sort",
+        activityData: {
+          buckets: ["Price", "Revenue", "EPS"],
+          cards: [
+            { id: "price-def", label: "What one share trades for", target: "Price", description: "This is the market price of one share." },
+            { id: "revenue-def", label: "Business sales", target: "Revenue", description: "This is money coming in from sales." },
+            { id: "eps-def", label: "Profit per share", target: "EPS", description: "This is earnings broken down per share." },
+          ],
+        },
       }),
     ],
     {
@@ -6360,7 +6395,11 @@ const normalizedBusinessPanelsByLesson: Record<string, LearnPanel[]> = {
         eyebrow: "See it",
         activityKind: "checklist",
         activityData: {
-          items: ["How big is the company?", "Are sales growing?", "Is anything left after costs?"],
+          orderedItems: [
+            { id: "size", label: "How big is the company?", detail: "Start with company size." },
+            { id: "growth", label: "Are sales growing?", detail: "Then check sales momentum." },
+            { id: "profit", label: "Is anything left after costs?", detail: "Finish with what survives." },
+          ],
         },
       },
     ),
@@ -6701,7 +6740,11 @@ const normalizedBusinessPanelsByLesson: Record<string, LearnPanel[]> = {
         eyebrow: "Focus",
         activityKind: "checklist",
         activityData: {
-          items: ["How big is it?", "Is it growing?", "Is it profitable?"],
+          orderedItems: [
+            { id: "size", label: "How big is it?", detail: "Start with size." },
+            { id: "growth", label: "Is it growing?", detail: "Then check growth." },
+            { id: "profit", label: "Is it profitable?", detail: "Finish with profitability." },
+          ],
         },
       },
     ),
@@ -7402,9 +7445,14 @@ const normalizedMarketCapPanelsByLesson: Record<string, LearnPanel[]> = {
       "A careful read keeps size in the picture without turning it into a guarantee.",
       {
         eyebrow: "See it",
-        activityKind: "checklist",
+        activityKind: "tap-sort",
         activityData: {
-          items: ["Size can help", "Risk can still stay", "Avoid always-safe language"],
+          buckets: ["Careful read", "Too certain"],
+          cards: [
+            { id: "size-help", label: "Size can help", target: "Careful read", description: "Large size can still be a useful clue." },
+            { id: "risk-stays", label: "Risk can still stay", target: "Careful read", description: "Size does not erase every risk." },
+            { id: "always-safe", label: "Big market cap means always safe", target: "Too certain", description: "This turns one clue into a guarantee." },
+          ],
         },
       },
     ),
@@ -8288,7 +8336,11 @@ const normalizedEpsPanelsByLesson: Record<string, LearnPanel[]> = {
         eyebrow: "See it",
         activityKind: "checklist",
         activityData: {
-          items: ["Same industry?", "Similar economics?", "Comparable expectations?"],
+          orderedItems: [
+            { id: "industry", label: "Same industry?", detail: "Start with the sector match." },
+            { id: "economics", label: "Similar economics?", detail: "Then compare how the businesses work." },
+            { id: "expectations", label: "Comparable expectations?", detail: "Finish with how the market is pricing them." },
+          ],
         },
       },
     ),
@@ -8928,6 +8980,18 @@ for (const [lessonId, check] of Object.entries(normalizedEpsCheckPatches)) {
   if (lesson) {
     lesson.check = check;
   }
+}
+
+for (const lesson of Object.values(trendAndMomentumLessons)) {
+  if (lesson.practice.activityKind === "bucket-sort") {
+    lesson.practice.activityKind = "tap-sort";
+  }
+
+  lesson.learn.panels?.forEach((panel) => {
+    if (panel.activityKind === "bucket-sort") {
+      panel.activityKind = "tap-sort";
+    }
+  });
 }
 
 export const advancedAuthoredLessonExperiences: Record<string, AuthoredLessonExperience> = {

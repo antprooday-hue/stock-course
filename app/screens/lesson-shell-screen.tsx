@@ -1,6 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import dynamic from "next/dynamic";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type ComponentType,
+} from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { CourseLesson, CourseModule } from "../data/course-data";
 import {
@@ -13,30 +21,6 @@ import {
 import { JourneyLink } from "../components/journey-link";
 import { JourneySurface } from "../components/journey-surface";
 import { LessonCheckStep } from "../components/lesson-check-step";
-import {
-  FoundationsBossCheck,
-  FoundationsBossPractice,
-} from "../components/foundations-boss-checkpoint";
-import {
-  ChartBasicsBossCheck,
-  ChartBasicsBossPractice,
-  BreakoutVolumeBossCheck,
-  BreakoutVolumeBossPractice,
-  BusinessFundamentalsBossCheck,
-  BusinessFundamentalsBossPractice,
-  EpsPeBossCheck,
-  EpsPeBossPractice,
-  MarketCapRevenueBossCheck,
-  MarketCapRevenueBossPractice,
-  FinalMasteryBossCheck,
-  FinalMasteryBossPractice,
-  PuttingItTogetherBossCheck,
-  PuttingItTogetherBossPractice,
-  SupportResistanceBossCheck,
-  SupportResistanceBossPractice,
-  TrendMomentumBossCheck,
-  TrendMomentumBossPractice,
-} from "../components/module-boss-checkpoints";
 import { LessonLearnStep } from "../components/lesson-learn-step";
 import { LessonPracticeStep } from "../components/lesson-practice-step";
 import { LessonRewardStep } from "../components/lesson-reward-step";
@@ -74,6 +58,173 @@ type LessonShellScreenProps = {
 type PlayerStep = "learn" | "practice" | "check" | "reward";
 
 const stepSequence: PlayerStep[] = ["learn", "practice", "check", "reward"];
+
+function BossStepSkeleton({ label }: { label: string }) {
+  return (
+    <div className="rounded-3xl border-2 border-gray-100 bg-white px-8 py-12 text-center shadow-[0_4px_0_#e5e5e5]">
+      <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[#22c55e]">
+        Boss checkpoint
+      </p>
+      <h2 className="mt-4 text-2xl font-black text-[#1a2b4a]">
+        Loading {label.toLowerCase()}...
+      </h2>
+      <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-gray-500">
+        Pulling in the checkpoint without blocking the rest of the lesson route.
+      </p>
+    </div>
+  );
+}
+
+function loadBossComponent<TProps>(
+  loader: () => Promise<ComponentType<TProps>>,
+  label: string,
+) {
+  return dynamic(loader, {
+    loading: () => <BossStepSkeleton label={label} />,
+    ssr: false,
+  });
+}
+
+const FoundationsBossPractice = loadBossComponent(
+  () =>
+    import("../components/foundations-boss-checkpoint").then(
+      (mod) => mod.FoundationsBossPractice,
+    ),
+  "boss practice",
+);
+const FoundationsBossCheck = loadBossComponent(
+  () =>
+    import("../components/foundations-boss-checkpoint").then(
+      (mod) => mod.FoundationsBossCheck,
+    ),
+  "boss check",
+);
+const ChartBasicsBossPractice = loadBossComponent(
+  () =>
+    import("../components/module-boss-checkpoints").then(
+      (mod) => mod.ChartBasicsBossPractice,
+    ),
+  "boss practice",
+);
+const ChartBasicsBossCheck = loadBossComponent(
+  () =>
+    import("../components/module-boss-checkpoints").then(
+      (mod) => mod.ChartBasicsBossCheck,
+    ),
+  "boss check",
+);
+const TrendMomentumBossPractice = loadBossComponent(
+  () =>
+    import("../components/module-boss-checkpoints").then(
+      (mod) => mod.TrendMomentumBossPractice,
+    ),
+  "boss practice",
+);
+const TrendMomentumBossCheck = loadBossComponent(
+  () =>
+    import("../components/module-boss-checkpoints").then(
+      (mod) => mod.TrendMomentumBossCheck,
+    ),
+  "boss check",
+);
+const SupportResistanceBossPractice = loadBossComponent(
+  () =>
+    import("../components/module-boss-checkpoints").then(
+      (mod) => mod.SupportResistanceBossPractice,
+    ),
+  "boss practice",
+);
+const SupportResistanceBossCheck = loadBossComponent(
+  () =>
+    import("../components/module-boss-checkpoints").then(
+      (mod) => mod.SupportResistanceBossCheck,
+    ),
+  "boss check",
+);
+const BreakoutVolumeBossPractice = loadBossComponent(
+  () =>
+    import("../components/module-boss-checkpoints").then(
+      (mod) => mod.BreakoutVolumeBossPractice,
+    ),
+  "boss practice",
+);
+const BreakoutVolumeBossCheck = loadBossComponent(
+  () =>
+    import("../components/module-boss-checkpoints").then(
+      (mod) => mod.BreakoutVolumeBossCheck,
+    ),
+  "boss check",
+);
+const BusinessFundamentalsBossPractice = loadBossComponent(
+  () =>
+    import("../components/module-boss-checkpoints").then(
+      (mod) => mod.BusinessFundamentalsBossPractice,
+    ),
+  "boss practice",
+);
+const BusinessFundamentalsBossCheck = loadBossComponent(
+  () =>
+    import("../components/module-boss-checkpoints").then(
+      (mod) => mod.BusinessFundamentalsBossCheck,
+    ),
+  "boss check",
+);
+const MarketCapRevenueBossPractice = loadBossComponent(
+  () =>
+    import("../components/module-boss-checkpoints").then(
+      (mod) => mod.MarketCapRevenueBossPractice,
+    ),
+  "boss practice",
+);
+const MarketCapRevenueBossCheck = loadBossComponent(
+  () =>
+    import("../components/module-boss-checkpoints").then(
+      (mod) => mod.MarketCapRevenueBossCheck,
+    ),
+  "boss check",
+);
+const EpsPeBossPractice = loadBossComponent(
+  () =>
+    import("../components/module-boss-checkpoints").then(
+      (mod) => mod.EpsPeBossPractice,
+    ),
+  "boss practice",
+);
+const EpsPeBossCheck = loadBossComponent(
+  () =>
+    import("../components/module-boss-checkpoints").then(
+      (mod) => mod.EpsPeBossCheck,
+    ),
+  "boss check",
+);
+const PuttingItTogetherBossPractice = loadBossComponent(
+  () =>
+    import("../components/module-boss-checkpoints").then(
+      (mod) => mod.PuttingItTogetherBossPractice,
+    ),
+  "boss practice",
+);
+const PuttingItTogetherBossCheck = loadBossComponent(
+  () =>
+    import("../components/module-boss-checkpoints").then(
+      (mod) => mod.PuttingItTogetherBossCheck,
+    ),
+  "boss check",
+);
+const FinalMasteryBossPractice = loadBossComponent(
+  () =>
+    import("../components/module-boss-checkpoints").then(
+      (mod) => mod.FinalMasteryBossPractice,
+    ),
+  "boss practice",
+);
+const FinalMasteryBossCheck = loadBossComponent(
+  () =>
+    import("../components/module-boss-checkpoints").then(
+      (mod) => mod.FinalMasteryBossCheck,
+    ),
+  "boss check",
+);
 
 export function LessonShellScreen({
   lesson,

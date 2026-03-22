@@ -5,6 +5,10 @@ import { learnContent, type LearnContent } from "../lib/course-data";
 import { AlertCircleIcon, LightbulbIcon } from "./icons";
 import { LessonActivity } from "./lesson-activity";
 
+function capitalizeLead(value: string) {
+  return value.replace(/^([a-z])/, (letter) => letter.toUpperCase());
+}
+
 type LegacyLessonLearnStepProps = {
   stepId: string;
   onContinue: () => void;
@@ -22,13 +26,11 @@ type LessonLearnStepProps =
   | ModernLessonLearnStepProps;
 
 export function LessonLearnStep(props: LessonLearnStepProps) {
-  let content: LearnContent;
-
-  if ("stepId" in props && typeof props.stepId === "string") {
-    content = learnContent[props.stepId] ?? learnContent["1-1"];
-  } else {
-    content = props.content;
-  }
+  const content = (
+    "content" in props
+      ? props.content
+      : learnContent[props.stepId] ?? learnContent["1-1"]
+  ) as LearnContent;
 
   const panels = content.panels?.length
     ? content.panels
@@ -94,9 +96,9 @@ export function LessonLearnStep(props: LessonLearnStepProps) {
       {/* Content */}
       <div ref={panelBodyRef} style={{ marginBottom: 24 }}>
         <h2 style={{ fontSize: "clamp(24px,3.5vw,36px)", fontWeight: 900, color: "#172b4d", lineHeight: 1.2, letterSpacing: "-0.5px", marginBottom: 16 }}>
-          {panel.title}
+          {capitalizeLead(panel.title)}
         </h2>
-        <p style={{ fontSize: 18, color: "#4b5563", lineHeight: 1.75 }}>{panel.copy}</p>
+        <p style={{ fontSize: 18, color: "#4b5563", lineHeight: 1.75 }}>{capitalizeLead(panel.copy)}</p>
       </div>
 
       {panel.activityKind ? (
@@ -120,19 +122,19 @@ export function LessonLearnStep(props: LessonLearnStepProps) {
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
           {panel.highlights.map((item) => (
             <span key={item} style={{ background: "#f9fafb", border: "2px solid #e5e7eb", borderRadius: 99, padding: "6px 14px", fontSize: 14, color: "#4b5563", fontWeight: 600 }}>
-              {item}
+              {capitalizeLead(item)}
             </span>
           ))}
         </div>
       ) : null}
 
       {panel.note ? (
-        <div style={{ background: "#f0fdf4", border: "2px solid #bbf7d0", borderRadius: 16, padding: 16, marginBottom: 20 }}>
+        <div style={{ background: "#f0fdf4", borderRadius: 16, padding: 16, marginBottom: 20, boxShadow: "inset 0 0 0 1px #bbf7d0" }}>
           <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
             <LightbulbIcon style={{ width: 20, height: 20, color: "#16a34a", flexShrink: 0, marginTop: 2 }} />
             <div>
-              <p style={{ fontWeight: 800, fontSize: 14, color: "#172b4d", marginBottom: 4 }}>{panel.noteLabel ?? "What this means"}</p>
-              <p style={{ fontSize: 14, color: "#4b5563", lineHeight: 1.6 }}>{panel.note}</p>
+              <p style={{ fontWeight: 800, fontSize: 14, color: "#172b4d", marginBottom: 4 }}>{capitalizeLead(panel.noteLabel ?? "What this means")}</p>
+              <p style={{ fontSize: 14, color: "#4b5563", lineHeight: 1.6 }}>{capitalizeLead(panel.note)}</p>
             </div>
           </div>
         </div>
@@ -140,21 +142,21 @@ export function LessonLearnStep(props: LessonLearnStepProps) {
 
       {!content.panels?.length ? (
         <>
-          <div style={{ background: "#f0fdf4", border: "2px solid #bbf7d0", borderRadius: 16, padding: 16, marginBottom: 12 }}>
+          <div style={{ background: "#f0fdf4", borderRadius: 16, padding: 16, marginBottom: 12, boxShadow: "inset 0 0 0 1px #bbf7d0" }}>
             <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
               <LightbulbIcon style={{ width: 20, height: 20, color: "#16a34a", flexShrink: 0, marginTop: 2 }} />
               <div>
                 <p style={{ fontWeight: 800, fontSize: 14, color: "#172b4d", marginBottom: 4 }}>What this means</p>
-                <p style={{ fontSize: 14, color: "#4b5563", lineHeight: 1.6 }}>{content.whatThisMeans}</p>
+                <p style={{ fontSize: 14, color: "#4b5563", lineHeight: 1.6 }}>{capitalizeLead(content.whatThisMeans)}</p>
               </div>
             </div>
           </div>
-          <div style={{ background: "#fff1f2", border: "2px solid #fecdd3", borderRadius: 16, padding: 16, marginBottom: 20 }}>
+          <div style={{ background: "#fff1f2", borderRadius: 16, padding: 16, marginBottom: 20, boxShadow: "inset 0 0 0 1px #fecdd3" }}>
             <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
               <AlertCircleIcon style={{ width: 20, height: 20, color: "#e11d48", flexShrink: 0, marginTop: 2 }} />
               <div>
                 <p style={{ fontWeight: 800, fontSize: 14, color: "#172b4d", marginBottom: 4 }}>Common mistake</p>
-                <p style={{ fontSize: 14, color: "#4b5563", lineHeight: 1.6 }}>{content.commonMistake}</p>
+                <p style={{ fontSize: 14, color: "#4b5563", lineHeight: 1.6 }}>{capitalizeLead(content.commonMistake)}</p>
               </div>
             </div>
           </div>

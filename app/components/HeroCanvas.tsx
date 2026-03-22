@@ -175,14 +175,14 @@ export default function HeroCanvas({ onScrollProgress }: Props) {
     // ── draw grain ────────────────────────────────────────────────────────
     function drawGrain() {
       const W = window.innerWidth, H = window.innerHeight;
-      grainCtx.clearRect(0, 0, W, H);
-      grainCtx.save();
-      grainCtx.globalAlpha = 0.03;
+      grainCtx!.clearRect(0, 0, W, H);
+      grainCtx!.save();
+      grainCtx!.globalAlpha = 0.03;
       const ox = Math.random() * 200 - 100, oy = Math.random() * 200 - 100;
       for (let x = ox; x < W + 512; x += 512)
         for (let y = oy; y < H + 512; y += 512)
-          grainCtx.drawImage(og, x, y);
-      grainCtx.restore();
+          grainCtx!.drawImage(og, x, y);
+      grainCtx!.restore();
     }
 
     // ── draw runway ───────────────────────────────────────────────────────
@@ -206,10 +206,10 @@ export default function HeroCanvas({ onScrollProgress }: Props) {
         drawn[drawn.length - 1] = [lerp(a[0], b[0], partial), lerp(a[1], b[1], partial)];
       }
 
-      ctx.save();
-      ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.clip();
-      ctx.shadowColor = '#22c55e';
-      ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      ctx!.save();
+      ctx!.beginPath(); ctx!.rect(0, 0, W, H); ctx!.clip();
+      ctx!.shadowColor = '#22c55e';
+      ctx!.lineCap = 'round'; ctx!.lineJoin = 'round';
 
       for (let i = 0; i < drawn.length - 1; i++) {
         const t     = i / (segCount - 1);
@@ -223,33 +223,33 @@ export default function HeroCanvas({ onScrollProgress }: Props) {
         const cp1y = p1[1] + (p2[1] - p0[1]) / 6;
         const cp2x = p2[0] - (p3[0] - p1[0]) / 6;
         const cp2y = p2[1] - (p3[1] - p1[1]) / 6;
-        ctx.beginPath();
-        ctx.moveTo(p1[0], p1[1]);
-        ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2[0], p2[1]);
-        ctx.strokeStyle = `rgba(34,197,94,${alpha.toFixed(3)})`;
-        ctx.lineWidth   = lw;
-        ctx.shadowBlur  = lerp(2, 16, t);
-        ctx.stroke();
+        ctx!.beginPath();
+        ctx!.moveTo(p1[0], p1[1]);
+        ctx!.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2[0], p2[1]);
+        ctx!.strokeStyle = `rgba(34,197,94,${alpha.toFixed(3)})`;
+        ctx!.lineWidth   = lw;
+        ctx!.shadowBlur  = lerp(2, 16, t);
+        ctx!.stroke();
       }
-      ctx.shadowBlur = 0;
+      ctx!.shadowBlur = 0;
 
       // Endpoint dot
       const tip   = drawn[drawn.length - 1];
       const pulse = Math.sin(Date.now() * 0.003) * 3 + 14;
-      ctx.beginPath();
-      ctx.arc(tip[0], tip[1], pulse, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(34,197,94,0.3)';
-      ctx.lineWidth   = 1.5;
-      ctx.shadowBlur  = 0;
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(tip[0], tip[1], 5, 0, Math.PI * 2);
-      ctx.fillStyle  = '#22c55e';
-      ctx.shadowColor = '#22c55e';
-      ctx.shadowBlur  = 18;
-      ctx.fill();
-      ctx.shadowBlur = 0;
-      ctx.restore();
+      ctx!.beginPath();
+      ctx!.arc(tip[0], tip[1], pulse, 0, Math.PI * 2);
+      ctx!.strokeStyle = 'rgba(34,197,94,0.3)';
+      ctx!.lineWidth   = 1.5;
+      ctx!.shadowBlur  = 0;
+      ctx!.stroke();
+      ctx!.beginPath();
+      ctx!.arc(tip[0], tip[1], 5, 0, Math.PI * 2);
+      ctx!.fillStyle  = '#22c55e';
+      ctx!.shadowColor = '#22c55e';
+      ctx!.shadowBlur  = 18;
+      ctx!.fill();
+      ctx!.shadowBlur = 0;
+      ctx!.restore();
     }
 
     // ── draw 3D text ──────────────────────────────────────────────────────
@@ -273,27 +273,27 @@ export default function HeroCanvas({ onScrollProgress }: Props) {
         // Perspective scale: text grows as camera approaches, then overshoots
         const scale = clamp(PERSP / (PERSP + delta), 0.05, 3.0);
 
-        ctx.save();
-        ctx.translate(W / 2, H / 2);
-        ctx.scale(scale, scale);
-        ctx.globalAlpha  = opacity;
-        ctx.textAlign    = 'center';
-        ctx.textBaseline = 'middle';
+        ctx!.save();
+        ctx!.translate(W / 2, H / 2);
+        ctx!.scale(scale, scale);
+        ctx!.globalAlpha  = opacity;
+        ctx!.textAlign    = 'center';
+        ctx!.textBaseline = 'middle';
 
         for (const line of el.lines) {
-          ctx.font      = line.font(W);
-          ctx.fillStyle = line.color;
+          ctx!.font      = line.font(W);
+          ctx!.fillStyle = line.color;
           // Subtle glow on white text only
           if (line.color === '#ffffff') {
-            ctx.shadowColor = 'rgba(34,197,94,0.18)';
-            ctx.shadowBlur  = 10;
+            ctx!.shadowColor = 'rgba(34,197,94,0.18)';
+            ctx!.shadowBlur  = 10;
           } else {
-            ctx.shadowBlur = 0;
+            ctx!.shadowBlur = 0;
           }
-          ctx.fillText(line.text, 0, line.yOffset(H));
+          ctx!.fillText(line.text, 0, line.yOffset(H));
         }
-        ctx.shadowBlur = 0;
-        ctx.restore();
+        ctx!.shadowBlur = 0;
+        ctx!.restore();
       }
     }
 
@@ -326,7 +326,7 @@ export default function HeroCanvas({ onScrollProgress }: Props) {
       }
 
       const W = window.innerWidth, H = window.innerHeight;
-      ctx.clearRect(0, 0, W, H);
+      ctx!.clearRect(0, 0, W, H);
       drawGrain();
       drawRunway(cameraZ);
       drawText(cameraZ);

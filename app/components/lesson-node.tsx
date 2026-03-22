@@ -13,6 +13,7 @@ import { LessonTooltip } from "./lesson-tooltip";
 
 type LessonNodeProps = {
   accentColor: string;
+  allowFreeJump?: boolean;
   estimatedTime: string;
   href: string;
   isBoss: boolean;
@@ -28,6 +29,7 @@ type LessonNodeProps = {
 
 export function LessonNode({
   accentColor,
+  allowFreeJump = false,
   estimatedTime,
   href,
   isBoss,
@@ -38,6 +40,7 @@ export function LessonNode({
   title,
 }: LessonNodeProps) {
   const ChevronIcon = ChevronRightIcon ?? CircleIcon;
+  const effectiveState = allowFreeJump && state === "locked" ? "unlocked" : state;
   const [visible, setVisible] = useState(false);
   const [lockedNotice, setLockedNotice] = useState(false);
   const [transitionState, setTransitionState] = useState<
@@ -45,48 +48,56 @@ export function LessonNode({
   >("idle");
   const previousStateRef = useRef(state);
   const lockedTimeoutRef = useRef<number | null>(null);
-  const interactive = state !== "locked";
-  const sizeClass = isBoss ? "h-[5.5rem] w-[5.5rem]" : "h-[4.5rem] w-[4.5rem]";
+  const interactive = effectiveState !== "locked";
+  const sizeClass = isBoss
+    ? effectiveState === "current" ? "h-24 w-24" : "h-[5.5rem] w-[5.5rem]"
+    : effectiveState === "current" ? "h-20 w-20"
+    : effectiveState === "locked"  ? "h-14 w-14"
+    : "h-16 w-16";
   const motionClass =
-    state === "completed"
+    effectiveState === "completed"
       ? "completed"
-      : state === "current"
+      : effectiveState === "current"
         ? "current"
-        : state === "locked"
+        : effectiveState === "locked"
           ? "locked"
           : isBoss
             ? "boss-ready"
             : "";
   const statusClass =
-    state === "completed"
-      ? "border-transparent bg-[linear-gradient(135deg,#16a34a_0%,#22c55e_100%)] text-white shadow-[0_22px_36px_rgba(22,163,74,0.24)]"
-      : state === "current"
-        ? "border-white bg-white text-slate-950 shadow-[0_26px_40px_rgba(15,23,42,0.18)]"
-        : state === "unlocked"
-          ? "border-white/90 bg-white/95 text-slate-800 shadow-[0_18px_30px_rgba(15,23,42,0.12)]"
-          : "border-slate-200 bg-slate-100 text-slate-400 shadow-none";
+    effectiveState === "completed"
+      ? "border-transparent bg-[linear-gradient(135deg,#16a34a_0%,#22c55e_100%)] text-white shadow-[0_14px_28px_rgba(22,163,74,0.38)]"
+      : effectiveState === "current" && isBoss
+        ? "border-[#f59e0b] bg-[#fffbeb] text-[#92400e] shadow-[0_28px_52px_rgba(245,158,11,0.30)]"
+        : effectiveState === "current"
+          ? "border-white bg-white text-slate-950 shadow-[0_28px_52px_rgba(15,23,42,0.24)]"
+          : effectiveState === "unlocked" && isBoss
+            ? "border-[#fde68a] bg-[#fffbeb]/90 text-[#a16207] shadow-[0_12px_24px_rgba(217,119,6,0.18)]"
+            : effectiveState === "unlocked"
+              ? "border-white/80 bg-white/80 text-slate-500 shadow-[0_8px_18px_rgba(15,23,42,0.08)]"
+              : "border-gray-200/60 bg-gray-100/60 text-gray-300 shadow-none";
 
   useEffect(() => {
     const previousState = previousStateRef.current;
 
     if (previousState !== state) {
-      if (previousState === "current" && state === "completed") {
+      if (previousState === "current" && effectiveState === "completed") {
         setTransitionState("complete");
-      } else if (state === "current") {
+      } else if (effectiveState === "current") {
         setTransitionState("activate");
-      } else if (previousState === "locked" && state !== "locked") {
+      } else if (previousState === "locked" && effectiveState !== "locked") {
         setTransitionState(isBoss ? "boss-awaken" : "activate");
       }
     }
 
-    previousStateRef.current = state;
-  }, [isBoss, state]);
+    previousStateRef.current = effectiveState;
+  }, [effectiveState, isBoss]);
 
   useEffect(() => {
-    if (state === "current" && sequenceKey > 0) {
+    if (effectiveState === "current" && sequenceKey > 0) {
       setTransitionState("activate");
     }
-  }, [sequenceKey, state]);
+  }, [effectiveState, sequenceKey]);
 
   useEffect(() => {
     if (transitionState === "idle") {
@@ -128,32 +139,32 @@ export function LessonNode({
     <>
       <LessonTooltip
         accentColor={accentColor}
-        completed={state === "completed"}
+        completed={effectiveState === "completed"}
         estimatedTime={estimatedTime}
         isBoss={isBoss}
         lessonNumber={lessonNumber}
         lockedNotice={lockedNotice}
-        state={state}
+        state={effectiveState}
         title={title}
         visible={visible}
       />
       <div className="relative flex flex-col items-center gap-2">
-        {state === "current" ? (
+        {effectiveState === "current" ? (
           <span
             className={`course-node-pulse current-node-aura absolute ${sizeClass} rounded-full`}
-            style={{ borderColor: accentColor }}
+            style={{ borderColor: isBoss ? "#f59e0b" : accentColor }}
           />
         ) : null}
-        {state === "completed" ? (
+        {effectiveState === "completed" ? (
           <span
             className={`lesson-node-ring absolute ${sizeClass} rounded-full border`}
             style={{ borderColor: `${accentColor}55` }}
           />
         ) : null}
-        {isBoss && state !== "locked" ? (
+        {isBoss && effectiveState !== "locked" ? (
           <span
-            className={`boss-node-halo absolute ${sizeClass} rounded-full ${state === "current" ? "is-current" : ""}`}
-            style={{ color: accentColor }}
+            className={`boss-node-halo absolute ${sizeClass} rounded-full ${effectiveState === "current" ? "is-current" : ""}`}
+            style={{ color: effectiveState === "completed" ? accentColor : "#f59e0b" }}
           />
         ) : null}
         <div
@@ -165,32 +176,33 @@ export function LessonNode({
           data-transition={transitionState}
           style={{
             borderColor:
-              state === "current" || (isBoss && state !== "locked") ? accentColor : undefined,
-            boxShadow:
-              state === "current"
-                ? `0 24px 42px ${accentColor}33`
-                : state === "unlocked" && isBoss
-                  ? `0 22px 38px ${accentColor}28`
-                  : undefined,
+              effectiveState === "current" && isBoss ? "#f59e0b"
+              : effectiveState === "current" ? accentColor
+              : isBoss && effectiveState === "unlocked" ? "#fde68a"
+              : isBoss && effectiveState !== "locked" ? "#f59e0b"
+              : undefined,
           }}
         >
-          {state === "locked" ? (
-            <LockIcon className="h-[1.15rem] w-[1.15rem]" />
-          ) : state === "completed" ? (
-            <CheckCircleIcon className="h-7 w-7 reward-badge-glow" />
+          {effectiveState === "locked" ? (
+            <LockIcon className="h-4 w-4" />
+          ) : effectiveState === "completed" ? (
+            <CheckCircleIcon className="h-8 w-8 reward-badge-glow" />
           ) : isBoss ? (
-            <StarIcon className="h-7 w-7" style={{ color: accentColor }} />
-          ) : state === "current" ? (
-                <ChevronIcon className="h-7 w-7" style={{ color: accentColor }} />
+            <StarIcon
+              className="h-8 w-8"
+              style={{ color: "#f59e0b" }}
+            />
+          ) : effectiveState === "current" ? (
+            <ChevronIcon className="h-9 w-9" style={{ color: accentColor }} />
           ) : (
-            <span className="text-[1.15rem] font-semibold">{lessonNumber}</span>
+            <span className="text-[1.1rem] font-black">{lessonNumber}</span>
           )}
         </div>
         <span
-          className={`text-[11px] font-semibold uppercase tracking-[0.16em] ${
-            state === "locked" ? "text-slate-400" : "text-slate-500"
+          className={`text-[11px] font-black uppercase tracking-[0.14em] ${
+            effectiveState === "locked" ? "text-gray-400" : "text-slate-500"
           }`}
-          style={{ color: state === "locked" ? undefined : accentColor }}
+          style={{ color: effectiveState === "locked" ? undefined : accentColor }}
         >
           {isBoss ? "Boss" : lessonNumber}
         </span>
@@ -198,9 +210,9 @@ export function LessonNode({
     </>
   );
 
-  const positionedClass = `absolute ${state === "current" ? "roadmap-node-anchor is-current" : "roadmap-node-anchor"} ${
-    state === "completed" ? "is-completed" : ""
-  } ${state === "locked" ? "is-locked" : ""}`;
+  const positionedClass = `absolute ${effectiveState === "current" ? "roadmap-node-anchor is-current" : "roadmap-node-anchor"} ${
+    effectiveState === "completed" ? "is-completed" : ""
+  } ${effectiveState === "locked" ? "is-locked" : ""}`;
   const positionedStyle = {
     left: `${position.x}%`,
     top: `${position.y}%`,
@@ -247,7 +259,7 @@ export function LessonNode({
       <JourneyLink
         aria-label={title}
         className="interactive-node block"
-        href={href}
+        href={allowFreeJump ? `${href}?qa=1` : href}
         intent="lesson"
         prefetch={false}
       >

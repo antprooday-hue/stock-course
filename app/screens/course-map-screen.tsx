@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { FinalAchievementCard } from "../components/final-achievement-card";
 import { JourneySurface } from "../components/journey-surface";
 import { ModulePreviewCard } from "../components/module-preview-card";
@@ -47,7 +47,7 @@ function LeftSidebar({ hearts, streak, totalXp }: SidebarProps) {
   ];
 
   return (
-    <aside className="sticky top-0 hidden h-screen w-[220px] flex-shrink-0 flex-col border-r-2 border-gray-100 bg-white py-8 lg:flex">
+    <aside className="sticky top-0 hidden h-screen w-[200px] flex-shrink-0 flex-col border-r border-gray-100 bg-white py-8 lg:flex">
       {/* Logo */}
       <div className="px-5 pb-8">
         <StokedLogo />
@@ -61,7 +61,7 @@ function LeftSidebar({ hearts, streak, totalXp }: SidebarProps) {
             href={item.href}
             className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-black uppercase tracking-wide transition-all ${
               item.active
-                ? "border-b-2 border-[#16a34a] bg-green-50 text-[#22c55e]"
+                ? "bg-[#f0fdf4] text-[#22c55e] shadow-[0_3px_0_#bbf7d0] border-2 border-[#bbf7d0]"
                 : "text-gray-400 hover:bg-gray-50 hover:text-[#1a2b4a]"
             }`}
           >
@@ -72,22 +72,22 @@ function LeftSidebar({ hearts, streak, totalXp }: SidebarProps) {
       </nav>
 
       {/* Stats */}
-      <div className="flex flex-col gap-3 border-t-2 border-gray-100 px-3 pt-6">
-        <div className="flex items-center gap-3 rounded-2xl border-2 border-gray-100 bg-white px-4 py-3 shadow-[0_3px_0_#e5e5e5]">
+      <div className="flex flex-col gap-3 border-t border-gray-100 px-3 pt-6">
+        <div className="flex items-center gap-3 rounded-2xl border-2 border-gray-100 bg-white px-4 py-3 shadow-[0_2px_0_#ebebeb]">
           <span className="text-2xl">🔥</span>
           <div>
             <div className="text-lg font-black text-[#ff9600]">{streak}</div>
             <div className="text-[10px] font-black uppercase tracking-wider text-gray-400">Day streak</div>
           </div>
         </div>
-        <div className="flex items-center gap-3 rounded-2xl border-2 border-gray-100 bg-white px-4 py-3 shadow-[0_3px_0_#e5e5e5]">
+        <div className="flex items-center gap-3 rounded-2xl border-2 border-gray-100 bg-white px-4 py-3 shadow-[0_2px_0_#ebebeb]">
           <span className="text-2xl">⚡</span>
           <div>
             <div className="text-lg font-black text-[#fbbf24]">{totalXp} XP</div>
             <div className="text-[10px] font-black uppercase tracking-wider text-gray-400">Total earned</div>
           </div>
         </div>
-        <div className="flex items-center gap-3 rounded-2xl border-2 border-gray-100 bg-white px-4 py-3 shadow-[0_3px_0_#e5e5e5]">
+        <div className="flex items-center gap-3 rounded-2xl border-2 border-gray-100 bg-white px-4 py-3 shadow-[0_2px_0_#ebebeb]">
           <span className="text-2xl">❤️</span>
           <div>
             <div className="text-lg font-black text-[#ef4444]">{hearts} / 5</div>
@@ -126,9 +126,9 @@ function RightPanel({
   streak,
 }: RightPanelProps) {
   return (
-    <aside className="sticky top-0 hidden h-screen w-[300px] flex-shrink-0 flex-col gap-4 overflow-y-auto border-l-2 border-gray-100 bg-white px-5 py-8 xl:flex">
+    <aside className="sticky top-0 hidden h-screen w-[260px] flex-shrink-0 flex-col gap-4 overflow-y-auto border-l border-gray-100 bg-white px-4 py-8 xl:flex">
       {/* Daily goal */}
-      <div className="rounded-3xl border-2 border-gray-100 bg-white p-5 shadow-[0_4px_0_#e5e5e5]">
+      <div className="rounded-2xl border-2 border-gray-100 bg-white p-5 shadow-[0_3px_0_#ebebeb]">
         <div className="mb-4 flex items-center gap-2">
           <span className="text-xl">🎯</span>
           <span className="text-xs font-black uppercase tracking-wider text-gray-400">Daily goal</span>
@@ -146,18 +146,18 @@ function RightPanel({
       </div>
 
       {/* Streak */}
-      <div className="rounded-3xl border-2 border-[#ff9600] bg-orange-50 p-5 shadow-[0_4px_0_#f09000]">
+      <div className="rounded-2xl border-2 border-[#ff9600] bg-orange-50 p-5 shadow-[0_4px_0_#f09000]">
         <div className="flex items-center gap-3">
           <span className="text-3xl">🔥</span>
           <div>
             <div className="text-2xl font-black text-[#ff9600]">{streak} day streak</div>
-            <div className="text-xs font-semibold text-orange-400">Keep it going!</div>
+            <div className="text-xs font-bold text-orange-400">Keep it going!</div>
           </div>
         </div>
       </div>
 
       {/* Rank */}
-      <div className="rounded-3xl border-2 border-gray-100 bg-white p-5 shadow-[0_4px_0_#e5e5e5]">
+      <div className="rounded-2xl border-2 border-gray-100 bg-white p-5 shadow-[0_3px_0_#ebebeb]">
         <div className="mb-1 flex items-center gap-2">
           <span className="text-xl">🏅</span>
           <span className="text-xs font-black uppercase tracking-wider text-gray-400">Your rank</span>
@@ -166,7 +166,7 @@ function RightPanel({
         <div className="mt-1 text-xs text-gray-400">Keep completing lessons to advance</div>
       </div>
 
-      <div className={`rounded-3xl p-5 shadow-[0_4px_0_#e5e5e5] ${isSignedIn ? "border-2 border-[#bbf7d0] bg-[#f0fdf4]" : "border-2 border-gray-100 bg-white"}`}>
+      <div className={`rounded-2xl p-5 shadow-[0_3px_0_#ebebeb] ${isSignedIn ? "border-2 border-[#bbf7d0] bg-[#f0fdf4]" : "border-2 border-gray-100 bg-white"}`}>
         <div className="mb-2 flex items-center gap-2">
           <span className="text-xl">{isSignedIn ? "☁️" : "🔐"}</span>
           <span className="text-xs font-black uppercase tracking-wider text-gray-400">
@@ -192,7 +192,7 @@ function RightPanel({
           <button
             type="button"
             onClick={onGoogleSignIn}
-            className="mt-4 inline-flex w-full items-center justify-center rounded-2xl border-2 border-gray-200 bg-white px-4 py-3 text-sm font-black uppercase tracking-wide text-[#172b4d] shadow-[0_4px_0_#e5e5e5]"
+            className="mt-4 inline-flex w-full items-center justify-center rounded-2xl border-2 border-gray-200 bg-white px-4 py-3 text-sm font-black uppercase tracking-wide text-[#172b4d] shadow-[0_3px_0_#ebebeb]"
           >
             Log in with Google
           </button>
@@ -220,7 +220,7 @@ type MobileBarProps = {
 
 function MobileTopBar({ streak, completionPercent, resumeHref }: MobileBarProps) {
   return (
-    <header className="sticky top-0 z-40 border-b-2 border-gray-100 bg-white px-4 lg:hidden">
+    <header className="sticky top-0 z-40 border-b border-gray-100 bg-white px-4 lg:hidden">
       <div className="flex h-14 items-center justify-between gap-4">
         <StokedLogo />
         <div className="flex flex-1 items-center gap-3">
@@ -258,6 +258,7 @@ function MobileTopBar({ streak, completionPercent, resumeHref }: MobileBarProps)
 
 // ─── Main screen ──────────────────────────────────────────────────────────────
 export function CourseMapScreen() {
+  const [freeJumpEnabled, setFreeJumpEnabled] = useState(false);
   const moduleAnchorRef = useRef<HTMLDivElement | null>(null);
   const { signInWithGoogle, user } = useAuth();
   const nickname = useSyncExternalStore(
@@ -318,7 +319,7 @@ export function CourseMapScreen() {
   return (
     <JourneySurface surface="map">
       <div
-        className="flex min-h-screen bg-white"
+        className="flex min-h-screen bg-[#faf9f6]"
         style={{ fontFamily: "var(--font-dm-sans,'DM Sans',system-ui,sans-serif)" }}
       >
         {/* Left sidebar */}
@@ -349,56 +350,92 @@ export function CourseMapScreen() {
               <p className="mt-1 text-sm text-gray-500">
                 {courseState.completedLessons}/{courseState.totalLessons} lessons complete &mdash; keep going!
               </p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <button
+                  className={`rounded-2xl border px-4 py-2 text-sm font-black uppercase tracking-wide transition ${
+                    freeJumpEnabled
+                      ? "border-[#bbf7d0] bg-[#f0fdf4] text-[#15803d] shadow-[0_3px_0_#bbf7d0]"
+                      : "border-gray-200 bg-white text-[#172b4d] shadow-[0_3px_0_#ebebeb]"
+                  }`}
+                  onClick={() => setFreeJumpEnabled((value) => !value)}
+                  type="button"
+                >
+                  {freeJumpEnabled ? "Jump mode on" : "Jump to any lesson"}
+                </button>
+                {freeJumpEnabled ? (
+                  <p className="self-center text-xs font-bold uppercase tracking-[0.14em] text-gray-400">
+                    Roadmap now lets you open any lesson in all 10 modules.
+                  </p>
+                ) : null}
+              </div>
             </div>
 
             <div className="space-y-10">
-              {/* Current module */}
-              {currentModule && (
-                <div id={`module-${currentModule.slug}`} ref={moduleAnchorRef}>
-                  <div className="mb-3">
+              {freeJumpEnabled ? (
+                <section className="space-y-6">
+                  <div>
                     <p className="text-[10px] font-black uppercase tracking-widest text-[#22c55e]">
-                      Current path
+                      All modules
                     </p>
-                    <h2 className="text-xl font-black text-[#1a2b4a]">
-                      {currentModule.title}
-                    </h2>
+                    <h2 className="mt-1 text-xl font-black text-[#1a2b4a]">Open any lesson directly</h2>
                   </div>
-                  <ModuleSection module={currentModule} />
-                </div>
-              )}
-
-              {/* Upcoming modules */}
-              {upcomingMods.length > 0 && (
-                <section className="space-y-3">
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-                      Locked ahead
-                    </p>
-                    <h3 className="mt-1 text-lg font-black text-[#1a2b4a]">Next worlds</h3>
-                  </div>
-                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    {upcomingMods.map((mod) => (
-                      <ModulePreviewCard key={mod.id} module={mod} variant="locked" />
-                    ))}
-                  </div>
+                  {courseState.modules.map((module) => (
+                    <div key={module.id} id={`module-${module.slug}`}>
+                      <ModuleSection allowFreeJump module={module} />
+                    </div>
+                  ))}
                 </section>
-              )}
+              ) : (
+                <>
+                  {/* Current module */}
+                  {currentModule && (
+                    <div id={`module-${currentModule.slug}`} ref={moduleAnchorRef}>
+                      <div className="mb-3">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-[#22c55e]">
+                          Current path
+                        </p>
+                        <h2 className="text-xl font-black text-[#1a2b4a]">
+                          {currentModule.title}
+                        </h2>
+                      </div>
+                      <ModuleSection module={currentModule} />
+                    </div>
+                  )}
 
-              {/* Completed modules */}
-              {completedMods.length > 0 && (
-                <section className="space-y-3">
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-                      Completed
-                    </p>
-                    <h3 className="mt-1 text-lg font-black text-[#1a2b4a]">Finished worlds</h3>
-                  </div>
-                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    {completedMods.map((mod) => (
-                      <ModulePreviewCard key={mod.id} module={mod} variant="completed" />
-                    ))}
-                  </div>
-                </section>
+                  {/* Upcoming modules */}
+                  {upcomingMods.length > 0 && (
+                    <section className="space-y-3">
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                          Locked ahead
+                        </p>
+                        <h3 className="mt-1 text-lg font-black text-[#1a2b4a]">Next worlds</h3>
+                      </div>
+                      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        {upcomingMods.map((mod) => (
+                          <ModulePreviewCard key={mod.id} module={mod} variant="locked" />
+                        ))}
+                      </div>
+                    </section>
+                  )}
+
+                  {/* Completed modules */}
+                  {completedMods.length > 0 && (
+                    <section className="space-y-3">
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                          Completed
+                        </p>
+                        <h3 className="mt-1 text-lg font-black text-[#1a2b4a]">Finished worlds</h3>
+                      </div>
+                      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        {completedMods.map((mod) => (
+                          <ModulePreviewCard key={mod.id} module={mod} variant="completed" />
+                        ))}
+                      </div>
+                    </section>
+                  )}
+                </>
               )}
 
               <FinalAchievementCard completionPercent={courseState.completionPercent} />

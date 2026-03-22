@@ -47,33 +47,73 @@ type ThemeConfig = {
   reviewPrompt: string;
 };
 
-let authoredExperienceCache: Record<string, AuthoredLessonExperience> | null =
-  null;
-let authoredExperiencePromise:
-  | Promise<Record<string, AuthoredLessonExperience>>
-  | null = null;
+type AuthoredExperienceSource = "core" | "advanced" | "synthesis";
 
-async function loadAuthoredExperiences() {
-  if (authoredExperienceCache) {
-    return authoredExperienceCache;
+const authoredExperienceCaches: Partial<
+  Record<AuthoredExperienceSource, Record<string, AuthoredLessonExperience>>
+> = {};
+
+const authoredExperiencePromises: Partial<
+  Record<AuthoredExperienceSource, Promise<Record<string, AuthoredLessonExperience>>>
+> = {};
+
+function getAuthoredExperienceSource(
+  module: CourseModule,
+): AuthoredExperienceSource {
+  if (module.id <= 2) {
+    return "core";
   }
 
-  if (!authoredExperiencePromise) {
-    authoredExperiencePromise = Promise.all([
-      import("../data/authored-lessons"),
-      import("../data/authored-lessons-advanced"),
-      import("../data/authored-lessons-synthesis"),
-    ]).then(([core, advanced, synthesis]) => {
-      authoredExperienceCache = {
-        ...core.authoredLessonExperiences,
-        ...advanced.advancedAuthoredLessonExperiences,
-        ...synthesis.synthesisAuthoredLessonExperiences,
-      };
-      return authoredExperienceCache;
-    });
+  if (module.id <= 8) {
+    return "advanced";
   }
 
-  return authoredExperiencePromise;
+  return "synthesis";
+}
+
+function getCachedAuthoredExperience(lessonId: string) {
+  return Object.values(authoredExperienceCaches).find(Boolean)?.[lessonId]
+    ?? authoredExperienceCaches.core?.[lessonId]
+    ?? authoredExperienceCaches.advanced?.[lessonId]
+    ?? authoredExperienceCaches.synthesis?.[lessonId];
+}
+
+async function loadAuthoredExperiencesForModule(module: CourseModule) {
+  const source = getAuthoredExperienceSource(module);
+  const cached = authoredExperienceCaches[source];
+
+  if (cached) {
+    return cached;
+  }
+
+  const pending = authoredExperiencePromises[source];
+
+  if (pending) {
+    return pending;
+  }
+
+  let loader: Promise<Record<string, AuthoredLessonExperience>>;
+
+  if (source === "core") {
+    loader = import("../data/authored-lessons").then(
+      (loaded) => loaded.authoredLessonExperiences,
+    );
+  } else if (source === "advanced") {
+    loader = import("../data/authored-lessons-advanced").then(
+      (loaded) => loaded.advancedAuthoredLessonExperiences,
+    );
+  } else {
+    loader = import("../data/authored-lessons-synthesis").then(
+      (loaded) => loaded.synthesisAuthoredLessonExperiences,
+    );
+  }
+
+  authoredExperiencePromises[source] = loader.then((loaded) => {
+    authoredExperienceCaches[source] = loaded;
+    return loaded;
+  });
+
+  return authoredExperiencePromises[source]!;
 }
 
 const moduleThemes: Record<string, ThemeConfig> = {
@@ -614,7 +654,7 @@ function cloneCheckOptions(options?: CheckContent["options"]) {
 }
 
 function getFoundationsExperience(lesson: CourseLesson): LessonExperience {
-  const authored = authoredExperienceCache?.[lesson.id];
+  const authored = getCachedAuthoredExperience(lesson.id);
 
   if (authored) {
     return {
@@ -777,7 +817,7 @@ export async function getLessonExperienceAsync(
   module: CourseModule,
   lesson: CourseLesson,
 ): Promise<LessonExperience> {
-  const authoredExperiences = await loadAuthoredExperiences();
+  const authoredExperiences = await loadAuthoredExperiencesForModule(module);
   const authored = authoredExperiences[lesson.id];
 
   if (authored) {

@@ -14,13 +14,13 @@ export function FinalAchievementCard({
       <div className="course-grid absolute inset-0 opacity-55" />
       <div className="relative flex items-center justify-between gap-8">
         <div className="max-w-2xl">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+          <p className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400">
             End goal
           </p>
-          <h3 className="mt-3 text-4xl font-semibold tracking-[-0.04em] text-slate-950">
+          <h3 className="mt-3 text-4xl font-black tracking-[-0.04em] text-[#172b4d]">
             Reach lesson 100 and unlock the graduate finish line.
           </h3>
-          <p className="mt-4 text-base leading-7 text-slate-600">
+          <p className="mt-4 text-base leading-7 text-gray-500">
             Finish every module to reach the final milestone.
           </p>
         </div>
@@ -29,10 +29,10 @@ export function FinalAchievementCard({
           <div className="reward-badge-glow mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[linear-gradient(135deg,#16a34a_0%,#22c55e_100%)] text-3xl font-semibold text-white shadow-[0_18px_34px_rgba(22,163,74,0.24)]">
             100
           </div>
-          <p className="mt-4 text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
+          <p className="mt-4 text-sm font-black uppercase tracking-[0.16em] text-gray-400">
             Course summit
           </p>
-          <p className="mt-1 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
+          <p className="mt-1 text-2xl font-black tracking-[-0.03em] text-[#172b4d]">
             <AnimatedNumber
               className="progress-value live"
               suffix="% complete"
