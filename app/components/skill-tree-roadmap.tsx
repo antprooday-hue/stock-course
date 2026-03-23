@@ -74,19 +74,30 @@ function getStockPositions(n: number): Array<{ x: number; y: number }> {
   });
 }
 
-// ─── SVG geometry — Mobile (portrait zigzag) ──────────────────────────────────
+// ─── SVG geometry — Mobile (portrait stock chart, same fracs as desktop) ────────
+//
+// Portrait canvas 500×600: same STOCK_Y_FRACS create a diagonal from
+// bottom-left (first/lowest) to top-right (last/highest), just like the
+// desktop view but taller relative to width.
+// At 355px container width: scale=0.71, NODE_R=34 → ~48px rendered diameter.
 
-const MW      = 400;   // mobile viewBox width
-const MH      = 900;   // mobile viewBox height
-const M_NODE_R = 52;   // node radius → ~46px at 355px container
-const M_Y_PAD  = 80;
+const MW       = 500;
+const MH       = 600;
+const M_NODE_R = 34;   // same as desktop — sc=1 means artwork is identical
 
 function getMobilePositions(n: number): Array<{ x: number; y: number }> {
-  const usableH = MH - M_Y_PAD * 2;
-  return Array.from({ length: n }, (_, i) => ({
-    x: i % 2 === 0 ? MW * 0.24 : MW * 0.76,
-    y: M_Y_PAD + (n === 1 ? usableH / 2 : (i / (n - 1)) * usableH),
-  }));
+  return Array.from({ length: n }, (_, i) => {
+    const t     = n === 1 ? 0 : i / (n - 1);
+    const srcT  = t * (STOCK_Y_FRACS.length - 1);
+    const lo    = Math.floor(srcT);
+    const hi    = Math.min(lo + 1, STOCK_Y_FRACS.length - 1);
+    const frac  = srcT - lo;
+    const yFrac = STOCK_Y_FRACS[lo] * (1 - frac) + STOCK_Y_FRACS[hi] * frac;
+    return {
+      x: 50 + t * (MW - 100),          // 50 → 450
+      y: 70 + yFrac * (MH - 140),      // 70 → 530 (fracs go bottom→top)
+    };
+  });
 }
 
 /** Smooth cubic-bezier SVG path through an array of {x,y} points via midpoint control points. */
