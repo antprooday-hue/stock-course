@@ -241,7 +241,6 @@ export function OnboardingScreen() {
   const [selected, setSelected]         = useState("");
   const [isExiting, setIsExiting]       = useState(false);
   const [loadingPhase, setLoadingPhase] = useState(0);
-  const autoAdvanceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const ready = nickname.trim().length > 0;
   const signedInEmail = user?.email ?? null;
@@ -371,8 +370,6 @@ export function OnboardingScreen() {
         setTimeout(() => setLoadingPhase(2), 1800);
         // Transition to results
         setTimeout(() => setQuizStep("results"), 2800);
-        // Auto-advance to course
-        autoAdvanceRef.current = setTimeout(() => router.push("/course"), 7000);
       }, 200);
     }
   }
@@ -399,7 +396,6 @@ export function OnboardingScreen() {
     router.push("/course");
   }
 
-  useEffect(() => () => { if (autoAdvanceRef.current) clearTimeout(autoAdvanceRef.current); }, []);
 
   const f = "var(--font-dm-sans,'DM Sans',system-ui,sans-serif)";
   const displayName = nickname.trim() || "Learner";
@@ -476,7 +472,7 @@ export function OnboardingScreen() {
                 <button
                   type="button"
                   className="start-btn-pulse"
-                  onClick={() => { if (autoAdvanceRef.current) clearTimeout(autoAdvanceRef.current); router.push("/course"); }}
+                  onClick={() => router.push("/course")}
                   style={{
                     width: "100%", padding: "18px", fontSize: 16, fontFamily: f,
                     fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em",
