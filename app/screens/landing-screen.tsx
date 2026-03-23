@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import HeroScene from "@/app/components/HeroScene";
 import { useAuth } from "../lib/auth-context";
+import { getQuizData, type QuizData } from "./onboarding-screen";
 
 // ─── Shared font ──────────────────────────────────────────────────────────────
 const font = "var(--font-dm-sans,'DM Sans',system-ui,sans-serif)";
@@ -319,7 +320,7 @@ const STREAK_LESSONS = [
 ];
 
 // ─── Streak illustration ──────────────────────────────────────────────────────
-function StreakCard({ onToast, onXp }: { onToast: (msg: string) => void; onXp: (n: number) => void }) {
+function StreakCard({ onToast, onXp, quiz }: { onToast: (msg: string) => void; onXp: (n: number) => void; quiz?: QuizData | null }) {
   const days = ["M", "T", "W", "T", "F", "S", "S"];
   const [bouncing, setBouncing] = useState<number | null>(null);
   const [modalDay, setModalDay] = useState<number | null>(null);
@@ -364,8 +365,17 @@ function StreakCard({ onToast, onXp }: { onToast: (msg: string) => void; onXp: (
         </div>
         <div style={{ background: "#fff7ed", border: "2px solid #ff9600", borderRadius: 20, boxShadow: "0 5px 0 #e08500", padding: "14px 32px", textAlign: "center" }}>
           <div style={{ fontSize: 20, fontWeight: 900, color: "#ff9600" }}>5 day streak!</div>
-          <div style={{ fontSize: 13, color: "#9ca3af", marginTop: 4 }}>Keep learning every day</div>
+          <div style={{ fontSize: 13, color: "#9ca3af", marginTop: 4 }}>
+            {quiz
+              ? `Hey ${quiz.nickname}! 2 more days to your 7-day badge.`
+              : "Keep learning every day"}
+          </div>
         </div>
+        {quiz && (
+          <div style={{ background: "#f0fdf4", border: "2px solid #bbf7d0", borderRadius: 14, padding: "10px 16px", textAlign: "center", fontSize: 13, color: "#15803d", fontWeight: 700 }}>
+            🎯 Your goal: {quiz.goal === "invest" ? "Start investing" : quiz.goal === "improve" ? "Improve trading skills" : quiz.goal === "education" ? "Learn for education" : "Explore investing"}
+          </div>
+        )}
       </div>
 
       {modalDay !== null && lessonInfo && (
@@ -816,14 +826,16 @@ export function LandingScreen() {
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  // ── Gamification state ──────────────────────────────────────────────────
+  // ── Gamification + quiz state ────────────────────────────────────────────
   const [xp, setXp] = useState(0);
   const [unlockedBadges, setUnlockedBadges] = useState<string[]>([]);
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [quizData, setQuizData] = useState<QuizData | null>(null);
 
   useEffect(() => {
     setXp(getStoredXP());
     setUnlockedBadges(getStoredBadges());
+    setQuizData(getQuizData());
   }, []);
 
   const addToast = useCallback((msg: string) => {
@@ -914,7 +926,7 @@ export function LandingScreen() {
               color: "#172b4d", lineHeight: 1.1,
               letterSpacing: isMobile ? "-0.5px" : "-1.5px", margin: 0,
             }}>
-              Learn stocks.<br />
+              {quizData ? `Welcome back, ${quizData.nickname}.` : "Learn stocks."}<br />
               <span style={{ color: "#22c55e" }}>For free.</span>
             </h1>
             <p style={{
@@ -1042,7 +1054,7 @@ export function LandingScreen() {
           tagColor="#ff9600"
           heading={<>Make learning<br />a daily streak</>}
           body="Just 5 minutes a day builds real knowledge. Track your streak, stay motivated, and watch your understanding compound — just like a good investment."
-          illustration={<StreakCard onToast={addToast} onXp={addXP} />}
+          illustration={<StreakCard onToast={addToast} onXp={addXP} quiz={quizData} />}
         />
       </Section>
 
