@@ -47,16 +47,12 @@ export const FOUNDATIONS_SKILL_LESSONS: SkillLesson[] = [
   { id: "foundations-10", title: "Your First Trade",        xpReward: 50, state: "locked"                          },
 ];
 
-// ─── SVG geometry ─────────────────────────────────────────────────────────────
+// ─── SVG geometry — Desktop ───────────────────────────────────────────────────
 
 const W = 920;
 const H = 520;
 const NODE_R = 34;
 
-/**
- * Pre-defined Y fractions (0 = top, 1 = bottom of chart area) for 10 nodes.
- * Creates a realistic uptrend with peaks & valleys — stock chart volatility.
- */
 const STOCK_Y_FRACS = [0.92, 0.72, 0.83, 0.57, 0.44, 0.56, 0.36, 0.49, 0.24, 0.12];
 
 const Y_PAD_T = 70;
@@ -66,7 +62,6 @@ const CHART_H  = H - Y_PAD_T - Y_PAD_B;
 function getStockPositions(n: number): Array<{ x: number; y: number }> {
   return Array.from({ length: n }, (_, i) => {
     const t = n === 1 ? 0 : i / (n - 1);
-    // Interpolate through the 10-point stock curve
     const srcT   = t * (STOCK_Y_FRACS.length - 1);
     const lo     = Math.floor(srcT);
     const hi     = Math.min(lo + 1, STOCK_Y_FRACS.length - 1);
@@ -77,6 +72,21 @@ function getStockPositions(n: number): Array<{ x: number; y: number }> {
       y: Y_PAD_T + yFrac * CHART_H,
     };
   });
+}
+
+// ─── SVG geometry — Mobile (portrait zigzag) ──────────────────────────────────
+
+const MW      = 400;   // mobile viewBox width
+const MH      = 900;   // mobile viewBox height
+const M_NODE_R = 52;   // node radius → ~46px at 355px container
+const M_Y_PAD  = 80;
+
+function getMobilePositions(n: number): Array<{ x: number; y: number }> {
+  const usableH = MH - M_Y_PAD * 2;
+  return Array.from({ length: n }, (_, i) => ({
+    x: i % 2 === 0 ? MW * 0.24 : MW * 0.76,
+    y: M_Y_PAD + (n === 1 ? usableH / 2 : (i / (n - 1)) * usableH),
+  }));
 }
 
 /** Smooth cubic-bezier SVG path through an array of {x,y} points via midpoint control points. */
@@ -148,7 +158,6 @@ export function SkillTreeRoadmap({
 }: SkillTreeRoadmapProps) {
   const font = "var(--font-dm-sans,'DM Sans',system-ui,sans-serif)";
 
-  // Unique IDs so multiple instances on one page don't clash
   const uid       = useId().replace(/:/g, "");
   const shineId   = `${uid}shine`;
   const grnGlowId = `${uid}nglow`;
@@ -157,18 +166,32 @@ export function SkillTreeRoadmap({
   const containerRef = useRef<HTMLDivElement>(null);
   const progPathRef  = useRef<SVGPathElement>(null);
 
-  const [animated,    setAnimated]    = useState(false);
-  const [progLen,     setProgLen]     = useState(3000);
-  const [hovered,     setHovered]     = useState<number | null>(null);
-  const [tooltipPos,  setTooltipPos]  = useState({ x: 0, y: 0 });
+  const [animated,   setAnimated]   = useState(false);
+  const [progLen,    setProgLen]    = useState(3000);
+  const [hovered,    setHovered]    = useState<number | null>(null);
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+  const [isMobile,   setIsMobile]   = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth <= 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   useEffect(() => {
     if (progPathRef.current) setProgLen(progPathRef.current.getTotalLength());
     const t = window.setTimeout(() => setAnimated(true), 80);
     return () => window.clearTimeout(t);
-  }, []);
+  }, [isMobile]);
 
-  const pts        = getStockPositions(lessons.length);
+  // Switch geometry based on breakpoint
+  const svgW   = isMobile ? MW      : W;
+  const svgH   = isMobile ? MH      : H;
+  const nodeR  = isMobile ? M_NODE_R : NODE_R;
+  const sc     = nodeR / NODE_R;   // scale factor for node artwork
+  const pts    = isMobile ? getMobilePositions(lessons.length) : getStockPositions(lessons.length);
+
   const fullCurve  = buildCurve(pts);
   const lastActive = lessons.reduce((acc, l, i) => l.state !== "locked" ? i : acc, -1);
   const progCurve  = lastActive >= 1 ? buildCurve(pts.slice(0, lastActive + 1)) : "";
@@ -188,6 +211,22 @@ export function SkillTreeRoadmap({
 
   const hoveredLesson    = hovered !== null ? (lessons[hovered] ?? null) : null;
   const tooltipFlipsDown = tooltipPos.y < 130;
+
+  const progressBar = (
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <div style={{ height: 8, flex: isMobile ? 1 : undefined, width: isMobile ? undefined : 80, background: "#e5e7eb", borderRadius: 99, overflow: "hidden" }}>
+        <div style={{
+          height: "100%", borderRadius: 99,
+          background: `linear-gradient(90deg, ${moduleColor}, ${hexToRgba(moduleColor, 0.7)})`,
+          width: `${(doneCount / lessons.length) * 100}%`,
+          transition: "width 600ms ease-out",
+        }} />
+      </div>
+      <span style={{ fontSize: 12, fontWeight: 800, color: "#9ca3af", whiteSpace: "nowrap" }}>
+        {doneCount}/{lessons.length}
+      </span>
+    </div>
+  );
 
   return (
     <div ref={containerRef} style={{ position: "relative", width: "100%", fontFamily: font }}>
@@ -217,24 +256,17 @@ export function SkillTreeRoadmap({
           <span style={{ fontWeight: 900, fontSize: 15, color: "#172b4d", letterSpacing: "-0.3px" }}>
             {moduleName}
           </span>
-          <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
-            <div style={{ height: 8, width: 80, background: "#e5e7eb", borderRadius: 99, overflow: "hidden" }}>
-              <div style={{
-                height: "100%", borderRadius: 99,
-                background: `linear-gradient(90deg, ${moduleColor}, ${hexToRgba(moduleColor, 0.7)})`,
-                width: `${(doneCount / lessons.length) * 100}%`,
-                transition: "width 600ms ease-out",
-              }} />
+          {/* Progress bar — desktop only (right-aligned in header) */}
+          {!isMobile && (
+            <div style={{ marginLeft: "auto" }}>
+              {progressBar}
             </div>
-            <span style={{ fontSize: 12, fontWeight: 800, color: "#9ca3af" }}>
-              {doneCount}/{lessons.length}
-            </span>
-          </div>
+          )}
         </div>
 
         {/* ── SVG canvas ── */}
         <svg
-          viewBox={`0 0 ${W} ${H}`}
+          viewBox={`0 0 ${svgW} ${svgH}`}
           style={{ width: "100%", height: "auto", display: "block", overflow: "visible" }}
           aria-label={`${moduleName} lesson roadmap`}
         >
@@ -260,8 +292,8 @@ export function SkillTreeRoadmap({
           </defs>
 
           {/* Background */}
-          <rect width={W} height={H} fill="#fafaf8" />
-          <rect width={W} height={H} fill={`url(#${gridId})`} />
+          <rect width={svgW} height={svgH} fill="#fafaf8" />
+          <rect width={svgW} height={svgH} fill={`url(#${gridId})`} />
 
           {/* Full ghost curve (faint) */}
           <path
@@ -306,7 +338,7 @@ export function SkillTreeRoadmap({
             const isHov    = hovered === i;
 
             const prog     = lesson.progress ?? 0;
-            const ringR    = NODE_R + 9;
+            const ringR    = nodeR + 9;
             const ringCirc = 2 * Math.PI * ringR;
             const ringOff  = ringCirc * (1 - prog / 100);
 
@@ -324,25 +356,20 @@ export function SkillTreeRoadmap({
                 onClick={() => { if (!isLocked) onLessonClick?.(lesson); }}
               >
                 {/* Hit area */}
-                <circle cx={pt.x} cy={pt.y} r={NODE_R + 20} fill="transparent" />
+                <circle cx={pt.x} cy={pt.y} r={nodeR + 20} fill="transparent" />
 
                 {/* ── COMPLETED: Module-colored with white checkmark ── */}
                 {isDone && (
                   <g filter={isHov ? `url(#${grnGlowId})` : undefined}
                      style={{ transition: "filter 150ms" }}>
-                    {/* Shadow */}
-                    <circle cx={pt.x} cy={pt.y + 7} r={NODE_R + 1} fill="rgba(0,0,0,0.18)" />
-                    {/* Body */}
-                    <circle cx={pt.x} cy={pt.y} r={NODE_R} fill={moduleColor} />
-                    {/* Shine */}
-                    <circle cx={pt.x} cy={pt.y} r={NODE_R} fill={`url(#${shineId})`} />
-                    {/* Rim */}
-                    <circle cx={pt.x} cy={pt.y} r={NODE_R} fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="2.5" />
-                    {/* Bold white checkmark */}
+                    <circle cx={pt.x} cy={pt.y + 7 * sc} r={nodeR + 1} fill="rgba(0,0,0,0.18)" />
+                    <circle cx={pt.x} cy={pt.y} r={nodeR} fill={moduleColor} />
+                    <circle cx={pt.x} cy={pt.y} r={nodeR} fill={`url(#${shineId})`} />
+                    <circle cx={pt.x} cy={pt.y} r={nodeR} fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="2.5" />
                     <polyline
-                      points={`${pt.x - 13},${pt.y + 2} ${pt.x - 3},${pt.y + 12} ${pt.x + 14},${pt.y - 10}`}
+                      points={`${pt.x - 13 * sc},${pt.y + 2 * sc} ${pt.x - 3 * sc},${pt.y + 12 * sc} ${pt.x + 14 * sc},${pt.y - 10 * sc}`}
                       fill="none" stroke="rgba(255,255,255,0.96)"
-                      strokeWidth={5} strokeLinecap="round" strokeLinejoin="round"
+                      strokeWidth={5 * sc} strokeLinecap="round" strokeLinejoin="round"
                     />
                   </g>
                 )}
@@ -350,59 +377,35 @@ export function SkillTreeRoadmap({
                 {/* ── CURRENT: Green with progress ring & star ── */}
                 {isCurr && (
                   <g>
-                    {/* Outer pulsing ring */}
                     <circle
-                      cx={pt.x} cy={pt.y} r={NODE_R + 18}
+                      cx={pt.x} cy={pt.y} r={nodeR + 18 * sc}
                       fill="none" stroke={moduleColor} strokeWidth="3"
-                      style={{
-                        transformBox: "fill-box", transformOrigin: "center",
-                        animation: "sk-pulseRing 1.8s ease-out infinite",
-                      }}
+                      style={{ transformBox: "fill-box", transformOrigin: "center", animation: "sk-pulseRing 1.8s ease-out infinite" }}
                     />
-                    {/* Second ring (subtle) */}
                     <circle
-                      cx={pt.x} cy={pt.y} r={NODE_R + 11}
+                      cx={pt.x} cy={pt.y} r={nodeR + 11 * sc}
                       fill="none" stroke={moduleColor} strokeWidth="2" opacity="0.3"
-                      style={{
-                        transformBox: "fill-box", transformOrigin: "center",
-                        animation: "sk-pulseRing 1.8s ease-out 0.4s infinite",
-                      }}
+                      style={{ transformBox: "fill-box", transformOrigin: "center", animation: "sk-pulseRing 1.8s ease-out 0.4s infinite" }}
                     />
-                    {/* Progress track */}
-                    <circle cx={pt.x} cy={pt.y} r={ringR}
-                      fill="none" stroke={hexToRgba(moduleColor, 0.2)} strokeWidth="5.5" />
-                    {/* Progress arc */}
+                    <circle cx={pt.x} cy={pt.y} r={ringR} fill="none" stroke={hexToRgba(moduleColor, 0.2)} strokeWidth="5.5" />
                     <circle cx={pt.x} cy={pt.y} r={ringR}
                       fill="none" stroke={moduleColor} strokeWidth="5.5"
                       strokeDasharray={ringCirc} strokeDashoffset={ringOff}
                       strokeLinecap="round"
-                      style={{
-                        transformBox: "fill-box", transformOrigin: "center",
-                        transform: "rotate(-90deg)",
-                        transition: "stroke-dashoffset 1s ease-out",
-                      }}
+                      style={{ transformBox: "fill-box", transformOrigin: "center", transform: "rotate(-90deg)", transition: "stroke-dashoffset 1s ease-out" }}
                     />
-                    {/* Shadow */}
-                    <circle cx={pt.x} cy={pt.y + 7} r={NODE_R + 1} fill="rgba(0,0,0,0.16)" />
-                    {/* Body */}
-                    <circle cx={pt.x} cy={pt.y} r={NODE_R}
+                    <circle cx={pt.x} cy={pt.y + 7 * sc} r={nodeR + 1} fill="rgba(0,0,0,0.16)" />
+                    <circle cx={pt.x} cy={pt.y} r={nodeR}
                       fill={moduleColor}
                       filter={isHov ? `url(#${grnGlowId})` : undefined}
                       style={{ transition: "filter 150ms" }}
                     />
-                    {/* Shine */}
-                    <circle cx={pt.x} cy={pt.y} r={NODE_R} fill={`url(#${shineId})`} />
-                    {/* Rim */}
-                    <circle cx={pt.x} cy={pt.y} r={NODE_R} fill="none"
-                      stroke="rgba(255,255,255,0.35)" strokeWidth="2.5" />
-                    {/* Star */}
+                    <circle cx={pt.x} cy={pt.y} r={nodeR} fill={`url(#${shineId})`} />
+                    <circle cx={pt.x} cy={pt.y} r={nodeR} fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="2.5" />
                     <polygon
-                      points={starPoints(pt.x, pt.y, 14, 6)}
+                      points={starPoints(pt.x, pt.y, 14 * sc, 6 * sc)}
                       fill="rgba(255,255,255,0.96)"
-                      style={{
-                        animation: "sk-bounce 2.2s ease-in-out infinite",
-                        transformBox: "fill-box", transformOrigin: "center",
-                      }}
+                      style={{ animation: "sk-bounce 2.2s ease-in-out infinite", transformBox: "fill-box", transformOrigin: "center" }}
                     />
                   </g>
                 )}
@@ -410,31 +413,25 @@ export function SkillTreeRoadmap({
                 {/* ── LOCKED: Dimmed green with padlock ── */}
                 {isLocked && (
                   <g opacity={isHov ? 0.75 : 0.5} style={{ transition: "opacity 150ms" }}>
-                    {/* Shadow */}
-                    <circle cx={pt.x} cy={pt.y + 5} r={NODE_R + 1} fill="rgba(0,0,0,0.08)" />
-                    {/* Body */}
-                    <circle cx={pt.x} cy={pt.y} r={NODE_R} fill={moduleColor} />
-                    {/* Shine */}
-                    <circle cx={pt.x} cy={pt.y} r={NODE_R} fill={`url(#${shineId})`} />
-                    {/* Shackle */}
+                    <circle cx={pt.x} cy={pt.y + 5 * sc} r={nodeR + 1} fill="rgba(0,0,0,0.08)" />
+                    <circle cx={pt.x} cy={pt.y} r={nodeR} fill={moduleColor} />
+                    <circle cx={pt.x} cy={pt.y} r={nodeR} fill={`url(#${shineId})`} />
                     <path
-                      d={`M ${pt.x - 9} ${pt.y - 2} L ${pt.x - 9} ${pt.y - 11} a 9 9 0 0 1 18 0 L ${pt.x + 9} ${pt.y - 2}`}
-                      fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth={4} strokeLinecap="round"
+                      d={`M ${pt.x - 9 * sc} ${pt.y - 2 * sc} L ${pt.x - 9 * sc} ${pt.y - 11 * sc} a ${9 * sc} ${9 * sc} 0 0 1 ${18 * sc} 0 L ${pt.x + 9 * sc} ${pt.y - 2 * sc}`}
+                      fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth={4 * sc} strokeLinecap="round"
                     />
-                    {/* Lock body */}
-                    <rect x={pt.x - 12} y={pt.y - 2} width={24} height={19} rx={5}
+                    <rect x={pt.x - 12 * sc} y={pt.y - 2 * sc} width={24 * sc} height={19 * sc} rx={5 * sc}
                       fill="rgba(255,255,255,0.9)"
                     />
-                    {/* Keyhole */}
-                    <circle cx={pt.x} cy={pt.y + 7.5} r={4} fill={moduleColor} />
-                    <rect x={pt.x - 1.8} y={pt.y + 7.5} width={3.6} height={6} rx={1} fill={moduleColor} />
+                    <circle cx={pt.x} cy={pt.y + 7.5 * sc} r={4 * sc} fill={moduleColor} />
+                    <rect x={pt.x - 1.8 * sc} y={pt.y + 7.5 * sc} width={3.6 * sc} height={6 * sc} rx={sc} fill={moduleColor} />
                   </g>
                 )}
 
                 {/* Lesson number badge */}
                 <text
-                  x={pt.x} y={pt.y + NODE_R + 20}
-                  textAnchor="middle" fontSize="11" fontWeight="900" fontFamily={font}
+                  x={pt.x} y={pt.y + nodeR + 20 * sc}
+                  textAnchor="middle" fontSize={11 * sc} fontWeight="900" fontFamily={font}
                   fill={isDone ? moduleColor : isCurr ? moduleColor : "#c4cdd6"}
                   style={{ letterSpacing: "0.04em" }}
                 >
@@ -444,6 +441,13 @@ export function SkillTreeRoadmap({
             );
           })}
         </svg>
+
+        {/* Progress bar — mobile only (bottom of card) */}
+        {isMobile && (
+          <div style={{ padding: "0 24px 20px" }}>
+            {progressBar}
+          </div>
+        )}
       </div>
 
       {/* ── Tooltip ── */}
