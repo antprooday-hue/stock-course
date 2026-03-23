@@ -78,7 +78,7 @@ const LANDING_CSS = `
 
   /* ── Stat cards ── */
   .st-card { transition: transform 150ms, box-shadow 150ms, background 200ms; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
-  @media(hover:hover){ .st-card:hover { transform: translateY(-2px) !important; box-shadow: 0 8px 0 #d1fae5 !important; background: #f0fdf4 !important; } }
+  @media(hover:hover){ .st-card:hover { transform: translateY(-3px) !important; box-shadow: 0 8px 0 #d1fae5, 0 0 0 1px #bbf7d0 !important; background: #f0fdf4 !important; } }
   .st-card:active { transform: scale(0.97) !important; }
   .st-card.st-on { background: #f0fdf4 !important; box-shadow: 0 6px 0 #d1fae5 !important; }
   .st-num { display: block; }
@@ -793,15 +793,15 @@ function StatCard({ icon, value, label, tip, font: f = font }: {
       role="button" tabIndex={0}
       onKeyDown={e => { if (e.key === "Enter" || e.key === " ") tap(); }}
       style={{
-        background: "#fff", border: "2px solid #e5e7eb", borderRadius: 16,
-        padding: "14px 10px 10px",
+        background: "#fff", border: "2px solid #e5e7eb", borderRadius: 18,
+        padding: "16px 12px 12px",
         display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
         boxShadow: "0 4px 0 #e5e7eb", minHeight: 56, fontFamily: f, textAlign: "center",
       }}
     >
       {icon}
-      <span className="st-num" style={{ fontWeight: 900, fontSize: 26, color: "#172b4d", lineHeight: 1.1, display: "block" }}>{value}</span>
-      <span style={{ fontSize: 12, fontWeight: 600, color: "#6b7280" }}>{label}</span>
+      <span className="st-num" style={{ fontWeight: 900, fontSize: 28, color: "#172b4d", lineHeight: 1.1, display: "block" }}>{value}</span>
+      <span style={{ fontSize: 12, fontWeight: 700, color: "#6b7280", letterSpacing: "0.02em" }}>{label}</span>
       <span className="st-tip">{tip}</span>
     </div>
   );
@@ -863,6 +863,11 @@ export function LandingScreen() {
                 ⚡ {xp} XP
               </span>
             )}
+            {!user && !isMobile && (
+              <DuoBtn href="/onboarding" variant="primary" style={{ padding: "8px 22px", fontSize: 13 }}>
+                Start Free
+              </DuoBtn>
+            )}
             <GoogleAccountButton
               disabled={authLoading && !user}
               onClick={handleGoogleLogin}
@@ -882,19 +887,19 @@ export function LandingScreen() {
       }}>
         <div style={{
           maxWidth: 1600, margin: "0 auto",
-          padding: isMobile ? "16px 16px 24px" : "60px 0 60px 40px",
+          padding: isMobile ? "12px 16px 20px" : "60px 0 60px 48px",
           width: "100%", display: "flex",
           flexDirection: isMobile ? "column-reverse" : "row",
-          alignItems: "center", gap: isMobile ? 16 : 0,
+          alignItems: "center", gap: isMobile ? 8 : 0,
           flexWrap: isMobile ? "nowrap" : "wrap", justifyContent: "center",
         }}>
           {/* Left text */}
           <div style={{
-            flex: isMobile ? "none" : "0 1 420px",
-            minWidth: isMobile ? 0 : 280,
+            flex: isMobile ? "none" : "0 0 460px",
+            minWidth: isMobile ? 0 : 300,
             width: isMobile ? "100%" : undefined,
             textAlign: isMobile ? "center" : "left",
-            marginTop: isMobile ? 16 : 0,
+            marginTop: 0,
           }}>
             <h1 style={{
               fontFamily: font, fontWeight: 900,
@@ -910,19 +915,19 @@ export function LandingScreen() {
               marginTop: isMobile ? 10 : 20, marginBottom: isMobile ? 14 : 36,
               lineHeight: isMobile ? 1.5 : 1.6, maxWidth: isMobile ? "100%" : 440,
             }}>
-              Fun, bite-sized lessons that make the stock market finally click. No jargon. No confusion.
+              Interactive lessons that make stocks actually click. Beginner-friendly, fast to start, and completely free.
             </p>
 
             {/* Buttons */}
             <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", flexWrap: "wrap", gap: isMobile ? 8 : 12 }}>
               {user ? (
                 <DuoBtn href="/course" variant="primary" big style={isMobile ? { width: "100%", padding: "14px 16px" } : {}}>
-                  Proceed to Course
+                  Start Learning
                 </DuoBtn>
               ) : (
                 <>
                   <DuoBtn href="/onboarding" variant="primary" big style={isMobile ? { width: "100%", padding: "14px 16px" } : {}}>
-                    Continue as Guest
+                    Start Free
                   </DuoBtn>
                   <button
                     type="button"
@@ -943,7 +948,7 @@ export function LandingScreen() {
                       boxShadow: "0 5px 0 #d1d5db", opacity: authLoading ? 0.7 : 1,
                     }}
                   >
-                    Log in with Google
+                    Sign in with Google
                   </button>
                 </>
               )}
@@ -980,7 +985,7 @@ export function LandingScreen() {
             <div className="st-stats-grid" style={{
               display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10,
               marginTop: isMobile ? 14 : 28,
-              width: isMobile ? "100%" : 340,
+              width: isMobile ? "100%" : 380,
             }}>
               <StatCard icon={<ModulesIcon />} value="10"    label="Modules"  tip="Complete at your pace" font={font} />
               <StatCard icon={<BookIcon />}    value="100+"  label="Lessons"  tip="Bite-sized learning"  font={font} />
@@ -992,8 +997,8 @@ export function LandingScreen() {
           {/* Right — 3D hero scene */}
           <div style={{
             flex: isMobile ? "none" : "1 1 660px",
-            height: isMobile ? 260 : "min(740px, calc(100vh - 100px))",
-            minHeight: isMobile ? 0 : 600,
+            height: isMobile ? 290 : "min(740px, calc(100vh - 100px))",
+            minHeight: isMobile ? 0 : 620,
             width: isMobile ? "100%" : undefined,
             position: "relative", overflow: "visible",
           }}>
@@ -1064,10 +1069,10 @@ export function LandingScreen() {
             Start learning today.<br />It&apos;s free, forever.
           </h2>
           <p style={{ fontSize: "clamp(14px,2vw,18px)" as string, color: "rgba(255,255,255,0.85)", marginBottom: 28, lineHeight: 1.6 }}>
-            Continue as a guest right away, or sign in with Google to keep your progress across visits.
+            Start in seconds — no signup needed. Sign in with Google to save your progress across devices.
           </p>
           <DuoBtn href="/onboarding" variant="white-on-green" big style={isMobile ? { width: "100%", padding: "14px 16px" } : {}}>
-            Continue as Guest
+            Start Free
           </DuoBtn>
         </div>
       </section>

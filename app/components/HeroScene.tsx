@@ -52,19 +52,19 @@ const ICON_CONFIGS: IconCfg[] = [
   {
     src: "/hero-icons/icon_book_analysis.png",
     spriteSize: 2.0,
-    orbitR: 3.8, orbitY: 2.2, orbitTilt: 0.28, orbitAngle: 2.0,
+    orbitR: 3.2, orbitY: 2.0, orbitTilt: 0.28, orbitAngle: 2.0,
     orbitSpeed: -0.18,                 // CCW — opposite to most others
-    bobAmp: 0.22, bobSpeed: 1.10, bobPhase: 0.0,
+    bobAmp: 0.20, bobSpeed: 1.10, bobPhase: 0.0,
     baseScale: 0.95, wobbleAmp: 0.14, wobbleSpeed: 0.9,
     glowColor: 0x3b82f6, glowIntens: 2.6,
   },
   // Rocket — outermost ring, clockwise, starts upper-right
   {
     src: "/hero-icons/icon_rocket.png",
-    spriteSize: 2.5,
-    orbitR: 5.5, orbitY: 2.8, orbitTilt: 0.15, orbitAngle: 5.5,
+    spriteSize: 2.3,
+    orbitR: 4.6, orbitY: 2.5, orbitTilt: 0.15, orbitAngle: 5.5,
     orbitSpeed: 0.21,
-    bobAmp: 0.30, bobSpeed: 0.85, bobPhase: 1.7,
+    bobAmp: 0.28, bobSpeed: 0.85, bobPhase: 1.7,
     baseScale: 1.10, wobbleAmp: 0.18, wobbleSpeed: 0.75,
     glowColor: 0xfbbf24, glowIntens: 3.0,
   },
@@ -72,9 +72,9 @@ const ICON_CONFIGS: IconCfg[] = [
   {
     src: "/hero-icons/icon_happybull.png",
     spriteSize: 2.7,
-    orbitR: 4.8, orbitY: 0.3, orbitTilt: 0.38, orbitAngle: 3.9,
+    orbitR: 4.0, orbitY: 0.3, orbitTilt: 0.38, orbitAngle: 3.9,
     orbitSpeed: 0.27,
-    bobAmp: 0.28, bobSpeed: 0.95, bobPhase: 3.2,
+    bobAmp: 0.26, bobSpeed: 0.95, bobPhase: 3.2,
     baseScale: 1.05, wobbleAmp: 0.12, wobbleSpeed: 1.1,
     glowColor: 0x22c55e, glowIntens: 2.8,
   },
@@ -82,20 +82,20 @@ const ICON_CONFIGS: IconCfg[] = [
   {
     src: "/hero-icons/icon_money_bag.png",
     spriteSize: 2.2,
-    orbitR: 4.3, orbitY: 1.1, orbitTilt: 0.32, orbitAngle: 0.8,
+    orbitR: 3.6, orbitY: 1.0, orbitTilt: 0.32, orbitAngle: 0.8,
     orbitSpeed: -0.23,                 // CCW
-    bobAmp: 0.24, bobSpeed: 1.05, bobPhase: 4.8,
+    bobAmp: 0.22, bobSpeed: 1.05, bobPhase: 4.8,
     baseScale: 0.90, wobbleAmp: 0.10, wobbleSpeed: 1.3,
     glowColor: 0xfbbf24, glowIntens: 2.8,
   },
   // Charging bull — second-outer ring, slow clockwise, starts upper-left
   {
     src: "/hero-icons/icon_charging_bull.png",
-    spriteSize: 1.7,
-    orbitR: 5.1, orbitY: 1.7, orbitTilt: 0.20, orbitAngle: 2.8,
+    spriteSize: 2.0,
+    orbitR: 4.2, orbitY: 1.6, orbitTilt: 0.20, orbitAngle: 2.8,
     orbitSpeed: 0.15,
     bobAmp: 0.18, bobSpeed: 1.20, bobPhase: 2.1,
-    baseScale: 0.80, wobbleAmp: 0.08, wobbleSpeed: 0.7,
+    baseScale: 0.85, wobbleAmp: 0.08, wobbleSpeed: 0.7,
     glowColor: 0x22c55e, glowIntens: 2.2,
   },
 ];
@@ -134,7 +134,7 @@ export default function HeroScene({
     // On mobile (narrow containers) bring the camera closer and centre it.
     // On desktop keep the original offset so the scene clears the text column.
     const isMobileScene = W < 600;
-    const camZ     = isMobileScene ? 9  : 14;
+    const camZ     = isMobileScene ? 9  : 12;
     const camLookX = isMobileScene ? 0  : -1.5;
     const camera = new THREE.PerspectiveCamera(44, W / H, 0.1, 200);
     camera.position.set(0, 3.2, camZ);
@@ -167,9 +167,8 @@ export default function HeroScene({
 
     // ── Root group — mouse tilt applied here ──────────────────────────────
     const root = new THREE.Group();
-    // Scale the whole composition down 8% to reduce visual dominance and
-    // give more breathing room around the text.
-    root.scale.setScalar(0.92);
+    // Composition scale: fills more of the right column on desktop.
+    root.scale.setScalar(1.0);
     scene.add(root);
 
     // ── Laptop group — holds the GLB ──────────────────────────────────────
@@ -385,12 +384,12 @@ export default function HeroScene({
       smoothX += (rawX - smoothX) * 0.075;
       smoothY += (rawY - smoothY) * 0.075;
 
-      // Whole-scene tilt from mouse
-      root.rotation.y =  smoothX * 0.50;
-      root.rotation.x = -smoothY * 0.28;
+      // Whole-scene tilt from mouse (slightly softer for premium feel)
+      root.rotation.y =  smoothX * 0.42;
+      root.rotation.x = -smoothY * 0.25;
 
-      // Laptop gentle float
-      laptopGroup.position.y = -0.8 + Math.sin(t * 0.48) * 0.07;
+      // Laptop gentle float — slightly more amplitude for presence
+      laptopGroup.position.y = -0.8 + Math.sin(t * 0.45) * 0.11;
 
       // ── Pass 1: set orbit positions + sprite wobble ────────────────────
       for (const ic of liveIcons) {
