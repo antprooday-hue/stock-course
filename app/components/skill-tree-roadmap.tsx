@@ -53,7 +53,7 @@ const W = 920;
 const H = 620;
 const NODE_R = 34;
 
-const STOCK_Y_FRACS = [0.88, 0.78, 0.82, 0.68, 0.60, 0.65, 0.50, 0.55, 0.38, 0.20];
+const STOCK_Y_FRACS = [0.92, 0.72, 0.83, 0.57, 0.44, 0.56, 0.36, 0.49, 0.24, 0.12];
 
 const Y_PAD_T = 70;
 const Y_PAD_B = 60;
@@ -74,28 +74,31 @@ function getStockPositions(n: number): Array<{ x: number; y: number }> {
   });
 }
 
-// ─── SVG geometry — Mobile (portrait stock chart, same fracs as desktop) ────────
+// ─── SVG geometry — Mobile ────────────────────────────────────────────────────
 //
-// Portrait canvas 500×600: same STOCK_Y_FRACS create a diagonal from
-// bottom-left (first/lowest) to top-right (last/highest), just like the
-// desktop view but taller relative to width.
-// At 355px container width: scale=0.71, NODE_R=34 → ~48px rendered diameter.
+// Portrait canvas 500×800. MOBILE_Y_FRACS are *strictly decreasing* so every
+// node is higher on screen than the previous — no overlap possible even though
+// horizontal spacing (46.7px SVG) < node diameter (76px).
+// Guaranteed min distance between adjacent nodes ≈ 78px > 2×M_NODE_R ✓
+// Rendered at 355px container (scale 0.71): M_NODE_R=38 → ~54px diameter.
 
 const MW       = 500;
-const MH       = 720;
-const M_NODE_R = 34;   // same as desktop — sc=1 means artwork is identical
+const MH       = 800;
+const M_NODE_R = 38;
+
+const MOBILE_Y_FRACS = [0.97, 0.87, 0.77, 0.64, 0.55, 0.42, 0.33, 0.22, 0.12, 0.01];
 
 function getMobilePositions(n: number): Array<{ x: number; y: number }> {
   return Array.from({ length: n }, (_, i) => {
     const t     = n === 1 ? 0 : i / (n - 1);
-    const srcT  = t * (STOCK_Y_FRACS.length - 1);
+    const srcT  = t * (MOBILE_Y_FRACS.length - 1);
     const lo    = Math.floor(srcT);
-    const hi    = Math.min(lo + 1, STOCK_Y_FRACS.length - 1);
+    const hi    = Math.min(lo + 1, MOBILE_Y_FRACS.length - 1);
     const frac  = srcT - lo;
-    const yFrac = STOCK_Y_FRACS[lo] * (1 - frac) + STOCK_Y_FRACS[hi] * frac;
+    const yFrac = MOBILE_Y_FRACS[lo] * (1 - frac) + MOBILE_Y_FRACS[hi] * frac;
     return {
-      x: 50 + t * (MW - 100),          // 50 → 450
-      y: 70 + yFrac * (MH - 140),      // 70 → 530 (fracs go bottom→top)
+      x: 40 + t * (MW - 80),       // 40 → 460 (uses full canvas width)
+      y: 25 + yFrac * (MH - 50),   // 25 → 775 (uses full canvas height)
     };
   });
 }
