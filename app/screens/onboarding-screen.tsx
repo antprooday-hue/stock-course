@@ -232,7 +232,6 @@ export function OnboardingScreen() {
   const [nickname, setNicknameDraft] = useState("");
   const [googleLoading, setGoogleLoading] = useState(false);
   const [authErrorMessage, setAuthErrorMessage] = useState<string | null>(null);
-  const [showContinueChoices, setShowContinueChoices] = useState(false);
   const [autoContinuePending, setAutoContinuePending] = useState(false);
 
   // Quiz state
@@ -270,7 +269,6 @@ export function OnboardingScreen() {
     if (authError) setAuthErrorMessage(authError);
     if (continueMode === "google") {
       setAutoContinuePending(true);
-      setShowContinueChoices(true);
     }
   }, []);
 
@@ -295,11 +293,8 @@ export function OnboardingScreen() {
 
   function handleContinueToCourse() {
     if (!ready) return;
-    if (user) { persistNicknameAndContinue(); return; }
-    setShowContinueChoices((c) => !c);
+    persistNicknameAndContinue();
   }
-  function handleContinueAsGuest() { persistNicknameAndContinue(); }
-
   const handleContinueWithGoogle = useCallback(async () => {
     if (googleLoading) return;
     if (user) { persistNicknameAndContinue(); return; }
@@ -366,10 +361,10 @@ export function OnboardingScreen() {
         setQuizStep("loading");
         setLoadingPhase(0);
         // Cycle through loading messages
-        setTimeout(() => setLoadingPhase(1), 900);
-        setTimeout(() => setLoadingPhase(2), 1800);
+        setTimeout(() => setLoadingPhase(1), 1600);
+        setTimeout(() => setLoadingPhase(2), 3200);
         // Transition to results
-        setTimeout(() => setQuizStep("results"), 2800);
+        setTimeout(() => setQuizStep("results"), 5200);
       }, 200);
     }
   }
@@ -700,18 +695,6 @@ export function OnboardingScreen() {
               Continue to course
             </button>
 
-            {showContinueChoices ? (
-              <div style={{ marginTop: 16, display: "grid", gap: 10, background: "#f9fafb", border: "2px solid #e5e7eb", borderRadius: 18, padding: 14 }}>
-                <button type="button" onClick={handleContinueAsGuest}
-                  style={{ width: "100%", padding: "14px 16px", borderRadius: 14, border: "2px solid #e5e7eb", background: "#ffffff", color: "#172b4d", fontFamily: f, fontSize: 14, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", cursor: "pointer", minHeight: 48 }}>
-                  Continue as guest
-                </button>
-                <button type="button" onClick={handleContinueWithGoogle} disabled={googleLoading || authLoading}
-                  style={{ width: "100%", padding: "14px 16px", borderRadius: 14, border: "none", background: "#22c55e", boxShadow: "0 4px 0 #16a34a", color: "#ffffff", fontFamily: f, fontSize: 14, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", cursor: googleLoading || authLoading ? "not-allowed" : "pointer", opacity: googleLoading || authLoading ? 0.7 : 1, minHeight: 48 }}>
-                  {user ? "Continue with connected account" : googleLoading ? "Connecting Google…" : "Continue with Google"}
-                </button>
-              </div>
-            ) : null}
           </div>
 
           <p style={{ textAlign: "center", marginTop: 20, fontSize: 14, color: "#9ca3af" }}>
