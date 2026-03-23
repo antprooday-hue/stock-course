@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import HeroScene from "@/app/components/HeroScene";
 import { useAuth } from "../lib/auth-context";
 import { getQuizData, type QuizData } from "./onboarding-screen";
@@ -17,15 +17,9 @@ function getStoredXP(): number {
   if (typeof window === "undefined") return 0;
   return Number(localStorage.getItem(XP_KEY) ?? 0);
 }
-function setStoredXP(n: number) {
-  if (typeof window !== "undefined") localStorage.setItem(XP_KEY, String(n));
-}
 function getStoredBadges(): string[] {
   if (typeof window === "undefined") return [];
   try { return JSON.parse(localStorage.getItem(BADGES_KEY) ?? "[]"); } catch { return []; }
-}
-function setStoredBadges(b: string[]) {
-  if (typeof window !== "undefined") localStorage.setItem(BADGES_KEY, JSON.stringify(b));
 }
 
 const ALL_BADGES = [
@@ -320,7 +314,7 @@ const STREAK_LESSONS = [
 ];
 
 // ─── Streak illustration ──────────────────────────────────────────────────────
-function StreakCard({ onToast, onXp, quiz }: { onToast: (msg: string) => void; onXp: (n: number) => void; quiz?: QuizData | null }) {
+function StreakCard({ quiz }: { quiz?: QuizData | null }) {
   const days = ["M", "T", "W", "T", "F", "S", "S"];
   const [bouncing, setBouncing] = useState<number | null>(null);
   const [modalDay, setModalDay] = useState<number | null>(null);
@@ -456,13 +450,11 @@ const LESSON_TABS = [
 ];
 
 // ─── Lesson card illustration ─────────────────────────────────────────────────
-function LessonCard({ onToast, onXp }: { onToast: (msg: string) => void; onXp: (n: number) => void }) {
+function LessonCard() {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState("learn");
-  const [prevTab, setPrevTab] = useState("learn");
 
   function switchTab(id: string) {
-    setPrevTab(tab);
     setTab(id);
   }
 
@@ -569,7 +561,7 @@ const MODULES_DATA = [
 ];
 
 // ─── Progress illustration ────────────────────────────────────────────────────
-function ProgressCard({ onToast, onXp }: { onToast: (msg: string) => void; onXp: (n: number) => void }) {
+function ProgressCard() {
   const [modalMod, setModalMod] = useState<typeof MODULES_DATA[0] | null>(null);
 
   return (
@@ -829,7 +821,7 @@ export function LandingScreen() {
   // ── Gamification + quiz state ────────────────────────────────────────────
   const [xp, setXp] = useState(0);
   const [unlockedBadges, setUnlockedBadges] = useState<string[]>([]);
-  const [toasts, setToasts] = useState<Toast[]>([]);
+  const [toasts] = useState<Toast[]>([]);
   const [quizData, setQuizData] = useState<QuizData | null>(null);
 
   useEffect(() => {
@@ -838,23 +830,7 @@ export function LandingScreen() {
     setQuizData(getQuizData());
   }, []);
 
-  const addToast = useCallback((msg: string) => {
-    const id = Date.now();
-    setToasts(prev => [...prev, { id, msg }]);
-    setTimeout(() => {
-      setToasts(prev => prev.map(t => t.id === id ? { ...t, removing: true } : t));
-      setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 350);
-    }, 3000);
-  }, []);
 
-  const addXP = useCallback((amount: number, label?: string) => {
-    setXp(prev => {
-      const next = prev + amount;
-      setStoredXP(next);
-      return next;
-    });
-    addToast(label ?? `+${amount} XP`);
-  }, [addToast]);
 
   const photoUrl =
     typeof user?.user_metadata?.avatar_url === "string"
@@ -1054,7 +1030,7 @@ export function LandingScreen() {
           tagColor="#ff9600"
           heading={<>Make learning<br />a daily streak</>}
           body="Just 5 minutes a day builds real knowledge. Track your streak, stay motivated, and watch your understanding compound — just like a good investment."
-          illustration={<StreakCard onToast={addToast} onXp={addXP} quiz={quizData} />}
+          illustration={<StreakCard quiz={quizData} />}
         />
       </Section>
 
@@ -1066,7 +1042,7 @@ export function LandingScreen() {
           tagColor="#22c55e"
           heading={<>Bite-sized lessons<br />that actually stick</>}
           body="Every concept is taught in 3 steps: learn the idea, practice applying it, then check your understanding. No passive reading — active learning from day one."
-          illustration={<LessonCard onToast={addToast} onXp={addXP} />}
+          illustration={<LessonCard />}
         />
       </Section>
 
@@ -1077,7 +1053,7 @@ export function LandingScreen() {
           tagColor="#3b82f6"
           heading={<>See exactly how<br />far you&apos;ve come</>}
           body="10 modules. 100 lessons. Track your progress from stock basics to reading earnings reports. Unlock each module as your confidence grows."
-          illustration={<ProgressCard onToast={addToast} onXp={addXP} />}
+          illustration={<ProgressCard />}
         />
       </Section>
 
