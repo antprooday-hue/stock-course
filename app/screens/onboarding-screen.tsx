@@ -292,7 +292,9 @@ export function OnboardingScreen() {
   }, [nickname, ready, router]);
 
   function handleContinueToCourse() {
-    if (!ready) return;
+    if (!ready) {
+      return;
+    }
     persistNicknameAndContinue();
   }
   const handleContinueWithGoogle = useCallback(async () => {
@@ -692,9 +694,8 @@ export function OnboardingScreen() {
               onMouseDown={(e) => { if (!ready) return; const el = e.currentTarget; el.style.transform = "translateY(3px)"; el.style.boxShadow = "0 2px 0 #16a34a"; }}
               onMouseUp={(e) => { const el = e.currentTarget; el.style.transform = ""; el.style.boxShadow = ready ? "0 5px 0 #16a34a" : "0 5px 0 #b0b7c3"; }}
             >
-              Continue to course
+              {user ? "Continue to course" : "Continue as guest"}
             </button>
-
           </div>
 
           <p style={{ textAlign: "center", marginTop: 20, fontSize: 14, color: "#9ca3af" }}>

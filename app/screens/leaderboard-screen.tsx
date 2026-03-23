@@ -280,7 +280,7 @@ export function LeaderboardScreen() {
                     How ranking works
                   </p>
                   <ul className="mt-4 space-y-3 text-sm leading-6 text-gray-500">
-                    <li>Each completed lesson adds 10 XP.</li>
+                    <li>Regular lessons add 10 XP, and boss lessons add 20 XP.</li>
                     <li>Only signed-in users appear on the leaderboard.</li>
                     <li>Leaderboard placement updates from synced course milestones.</li>
                   </ul>

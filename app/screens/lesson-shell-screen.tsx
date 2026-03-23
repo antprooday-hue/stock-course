@@ -259,6 +259,11 @@ export function LessonShellScreen({
     spendHeart(Boolean(user));
   }
 
+  function handleLessonCompleted() {
+    completeLesson(lesson.id);
+    setCurrentStep("reward");
+  }
+
   const courseState = useMemo(
     () => deriveCourseState(storedProgress),
     [storedProgress],
@@ -538,9 +543,7 @@ export function LessonShellScreen({
       if (isFoundationsBoss) {
         return (
           <FoundationsBossCheck
-            onComplete={() => {
-              setCurrentStep("reward");
-            }}
+            onComplete={handleLessonCompleted}
             onIncorrect={handleIncorrect}
             onSetbackToPractice={(step) => {
               setFoundationsBossStep(step);
@@ -553,9 +556,7 @@ export function LessonShellScreen({
       if (isChartBasicsBoss) {
         return (
           <ChartBasicsBossCheck
-            onComplete={() => {
-              setCurrentStep("reward");
-            }}
+            onComplete={handleLessonCompleted}
             onIncorrect={handleIncorrect}
             onSetbackToPractice={(step) => {
               setChartBossStep(step);
@@ -568,9 +569,7 @@ export function LessonShellScreen({
       if (isTrendBoss) {
         return (
           <TrendMomentumBossCheck
-            onComplete={() => {
-              setCurrentStep("reward");
-            }}
+            onComplete={handleLessonCompleted}
             onIncorrect={handleIncorrect}
             onSetbackToPractice={(step) => {
               setTrendBossStep(step);
@@ -583,9 +582,7 @@ export function LessonShellScreen({
       if (isSupportBoss) {
         return (
           <SupportResistanceBossCheck
-            onComplete={() => {
-              setCurrentStep("reward");
-            }}
+            onComplete={handleLessonCompleted}
             onIncorrect={handleIncorrect}
             onSetbackToPractice={(step) => {
               setSupportBossStep(step);
@@ -598,9 +595,7 @@ export function LessonShellScreen({
       if (isBreakoutBoss) {
         return (
           <BreakoutVolumeBossCheck
-            onComplete={() => {
-              setCurrentStep("reward");
-            }}
+            onComplete={handleLessonCompleted}
             onIncorrect={handleIncorrect}
             onSetbackToPractice={(step) => {
               setBreakoutBossStep(step);
@@ -613,9 +608,7 @@ export function LessonShellScreen({
       if (isBusinessBoss) {
         return (
           <BusinessFundamentalsBossCheck
-            onComplete={() => {
-              setCurrentStep("reward");
-            }}
+            onComplete={handleLessonCompleted}
             onIncorrect={handleIncorrect}
             onSetbackToPractice={(step) => {
               setBusinessBossStep(step);
@@ -628,9 +621,7 @@ export function LessonShellScreen({
       if (isMarketCapBoss) {
         return (
           <MarketCapRevenueBossCheck
-            onComplete={() => {
-              setCurrentStep("reward");
-            }}
+            onComplete={handleLessonCompleted}
             onIncorrect={handleIncorrect}
             onSetbackToPractice={(step) => {
               setMarketCapBossStep(step);
@@ -643,9 +634,7 @@ export function LessonShellScreen({
       if (isEpsBoss) {
         return (
           <EpsPeBossCheck
-            onComplete={() => {
-              setCurrentStep("reward");
-            }}
+            onComplete={handleLessonCompleted}
             onIncorrect={handleIncorrect}
             onSetbackToPractice={(step) => {
               setEpsBossStep(step);
@@ -658,9 +647,7 @@ export function LessonShellScreen({
       if (isPuttingItTogetherBoss) {
         return (
           <PuttingItTogetherBossCheck
-            onComplete={() => {
-              setCurrentStep("reward");
-            }}
+            onComplete={handleLessonCompleted}
             onIncorrect={handleIncorrect}
             onSetbackToPractice={(step) => {
               setPuttingItTogetherBossStep(step);
@@ -673,9 +660,7 @@ export function LessonShellScreen({
       if (isFinalMasteryBoss) {
         return (
           <FinalMasteryBossCheck
-            onComplete={() => {
-              setCurrentStep("reward");
-            }}
+            onComplete={handleLessonCompleted}
             onIncorrect={handleIncorrect}
             onSetbackToPractice={(step) => {
               setFinalMasteryBossStep(step);
@@ -688,9 +673,7 @@ export function LessonShellScreen({
       return (
         <LessonCheckStep
           content={experience.check}
-          onContinue={() => {
-            setCurrentStep("reward");
-          }}
+          onContinue={handleLessonCompleted}
           onIncorrect={handleIncorrect}
         />
       );
@@ -699,20 +682,19 @@ export function LessonShellScreen({
     return (
       <LessonRewardStep
         accentColor={module.accentColor}
-        completedLessons={courseState.completedLessons}
+        completedLessons={rewardCourseState.completedLessons}
         completionLine={experience.rewardLine}
-        courseCompletionPercent={courseState.completionPercent}
+        courseCompletionPercent={rewardCourseState.completionPercent}
         isBossLesson={lesson.isBoss}
         lessonTitle={lesson.title}
         masteryTags={experience.masteryTags ?? []}
         moduleCompleted={Boolean(rewardDerivedModule?.completed)}
         moduleProgressPercent={rewardDerivedModule?.progressPercent ?? 0}
         moduleTitle={module.title}
-        moduleProgressLabel={`${courseState.completedLessons}/100 lessons completed`}
+        moduleProgressLabel={`${rewardCourseState.completedLessons}/100 lessons completed`}
         nextUnlockTitle={rewardDerivedModule?.completed ? rewardNextModule?.title ?? null : null}
         onContinue={() => {
-          const completedProgress = completeLesson(lesson.id);
-          const latestCourseState = deriveCourseState(completedProgress);
+          const latestCourseState = deriveCourseState(rewardPreviewProgress);
           const latestModule = latestCourseState.modules.find((item) => item.id === module.id);
           const latestNextModule = latestCourseState.modules.find((item) => item.id === module.id + 1);
 
@@ -728,11 +710,12 @@ export function LessonShellScreen({
 
           navigateWithJourney(
             router,
-            getNextLessonRoute(completedProgress),
+            getNextLessonRoute(rewardPreviewProgress),
             latestModule?.completed ? "milestone" : "lesson",
           );
         }}
         rankLabel={rewardCourseState.rank}
+        xpEarned={lesson.xp}
       />
     );
   }

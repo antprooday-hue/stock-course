@@ -21,6 +21,7 @@ type LessonRewardStepProps = {
   nextUnlockTitle?: string | null;
   onContinue: () => void;
   rankLabel: string;
+  xpEarned: number;
 };
 
 export function LessonRewardStep({
@@ -36,6 +37,7 @@ export function LessonRewardStep({
   nextUnlockTitle,
   onContinue,
   rankLabel,
+  xpEarned,
 }: LessonRewardStepProps) {
   const milestoneRef = useRef<HTMLDivElement | null>(null);
   const firedCelebrationRef = useRef(false);
@@ -130,6 +132,12 @@ export function LessonRewardStep({
             <p style={{ fontSize: 12, color: "#9ca3af", marginBottom: 4 }}>Total lessons completed</p>
             <p style={{ fontSize: 24, fontWeight: 900, color: "#172b4d" }}>
               <AnimatedNumber className="progress-value live" value={completedLessons} /> lessons
+            </p>
+          </div>
+          <div className="reward-progress-row" style={{ animationDelay: "100ms" }}>
+            <p style={{ fontSize: 12, color: "#9ca3af", marginBottom: 4 }}>XP earned</p>
+            <p style={{ fontSize: 24, fontWeight: 900, color: "#172b4d" }}>
+              +<AnimatedNumber className="progress-value live" value={xpEarned} /> XP
             </p>
           </div>
           <div className="reward-progress-row" style={{ animationDelay: "130ms" }}>

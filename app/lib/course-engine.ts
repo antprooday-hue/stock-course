@@ -1,6 +1,7 @@
 import {
   courseLessonCount,
   courseModules,
+  getTotalXpForLessonIds,
   type CourseLesson,
   type CourseModule,
   type LessonState,
@@ -54,7 +55,7 @@ export function createDemoCourseProgress(): CourseProgressRecord {
     lastStreakActiveOn: new Date().toISOString().slice(0, 10),
     seededDemo: true,
     streakCount: 5,
-    totalXp: completedLessonIds.length * 10,
+    totalXp: getTotalXpForLessonIds(completedLessonIds),
   };
 }
 

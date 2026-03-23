@@ -1,6 +1,7 @@
 "use client";
 
 import type { RealtimePostgresChangesPayload, User } from "@supabase/supabase-js";
+import { getTotalXpForLessonIds } from "../data/course-data";
 import type { CourseProgressRecord } from "./course-engine";
 import {
   getCertificateId,
@@ -124,7 +125,7 @@ export function normalizeCourseProgress(
   const completedLessonIds = Array.from(
     new Set(progress?.completedLessonIds ?? []),
   ).sort();
-  const derivedXp = completedLessonIds.length * 10;
+  const derivedXp = getTotalXpForLessonIds(completedLessonIds);
 
   return {
     completedLessonIds,

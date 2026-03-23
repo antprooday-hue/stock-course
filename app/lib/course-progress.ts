@@ -5,6 +5,7 @@ import {
   defaultCourseProgress,
   type CourseProgressRecord,
 } from "./course-engine";
+import { getLessonXpById, getTotalXpForLessonIds } from "../data/course-data";
 import {
   isIgnorableRemoteProgressError,
   serializeRemoteProgressError,
@@ -44,7 +45,7 @@ function safeParseProgress(raw: string | null) {
     const completedLessonIds = Array.isArray(parsed.completedLessonIds)
       ? [...new Set(parsed.completedLessonIds.filter(Boolean))]
       : [];
-    const derivedXp = completedLessonIds.length * 10;
+    const derivedXp = getTotalXpForLessonIds(completedLessonIds);
 
     return {
       completedLessonIds,
@@ -288,7 +289,7 @@ export function getProgressWithCompletedLesson(
     lastHeartRefillAt: progress.lastHeartRefillAt,
     lastStreakActiveOn: today,
     streakCount,
-    totalXp: progress.totalXp + 10,
+    totalXp: progress.totalXp + getLessonXpById(lessonId),
   };
 }
 

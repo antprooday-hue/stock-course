@@ -47,11 +47,18 @@ type ModuleSeed = Omit<CourseModule, "lessons"> & {
   tags: string[];
 };
 
+export const regularLessonXp = 10;
+export const bossLessonXp = 20;
+
 function slugify(value: string) {
   return value
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
+}
+
+export function getLessonXpValue(isBoss: boolean) {
+  return isBoss ? bossLessonXp : regularLessonXp;
 }
 
 const moduleSeeds: ModuleSeed[] = [
@@ -353,7 +360,7 @@ export const courseModules: CourseModule[] = moduleSeeds.map((moduleSeed) => {
       estimatedTime:
         moduleSeed.lessonTimes?.[index] ??
         (isBoss ? "12 min" : lessonNumber % 2 === 0 ? "7 min" : "6 min"),
-      xp: isBoss ? 120 : 40 + lessonNumber * 2,
+      xp: getLessonXpValue(isBoss),
       slug,
       route: `/course/${moduleSeed.slug}/${slug}`,
       isBoss,
@@ -380,6 +387,20 @@ export const courseLessonCount = courseModules.reduce(
   (total, module) => total + module.lessons.length,
   0,
 );
+
+const lessonXpById = new Map(
+  courseModules.flatMap((module) =>
+    module.lessons.map((lesson) => [lesson.id, lesson.xp] as const),
+  ),
+);
+
+export function getLessonXpById(lessonId: string) {
+  return lessonXpById.get(lessonId) ?? regularLessonXp;
+}
+
+export function getTotalXpForLessonIds(lessonIds: string[]) {
+  return lessonIds.reduce((total, lessonId) => total + getLessonXpById(lessonId), 0);
+}
 
 export function getModuleBySlug(moduleSlug: string) {
   return courseModules.find((module) => module.slug === moduleSlug);

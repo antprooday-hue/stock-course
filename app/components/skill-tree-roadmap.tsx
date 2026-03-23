@@ -35,16 +35,16 @@ export type SkillTreeRoadmapProps = {
 // ─── Sample data ──────────────────────────────────────────────────────────────
 
 export const FOUNDATIONS_SKILL_LESSONS: SkillLesson[] = [
-  { id: "foundations-1",  title: "Introduction to Stocks",  xpReward: 30, state: "locked"                          },
-  { id: "foundations-2",  title: "What is a Stock?",        xpReward: 30, state: "completed"                       },
-  { id: "foundations-3",  title: "Ownership & Shares",      xpReward: 30, state: "completed"                       },
-  { id: "foundations-4",  title: "The Stock Market",        xpReward: 30, state: "completed"                       },
-  { id: "foundations-5",  title: "How Prices Move",         xpReward: 30, state: "current",  progress: 40          },
-  { id: "foundations-6",  title: "Buy & Sell Orders",       xpReward: 30, state: "locked"                          },
-  { id: "foundations-7",  title: "Market Hours",            xpReward: 30, state: "locked"                          },
-  { id: "foundations-8",  title: "Trading Halts",           xpReward: 30, state: "locked"                          },
-  { id: "foundations-9",  title: "Dividends Explained",     xpReward: 30, state: "locked"                          },
-  { id: "foundations-10", title: "Your First Trade",        xpReward: 50, state: "locked"                          },
+  { id: "foundations-1",  title: "Introduction to Stocks",  xpReward: 10, state: "locked"                          },
+  { id: "foundations-2",  title: "What is a Stock?",        xpReward: 10, state: "completed"                       },
+  { id: "foundations-3",  title: "Ownership & Shares",      xpReward: 10, state: "completed"                       },
+  { id: "foundations-4",  title: "The Stock Market",        xpReward: 10, state: "completed"                       },
+  { id: "foundations-5",  title: "How Prices Move",         xpReward: 10, state: "current",  progress: 40          },
+  { id: "foundations-6",  title: "Buy & Sell Orders",       xpReward: 10, state: "locked"                          },
+  { id: "foundations-7",  title: "Market Hours",            xpReward: 10, state: "locked"                          },
+  { id: "foundations-8",  title: "Trading Halts",           xpReward: 10, state: "locked"                          },
+  { id: "foundations-9",  title: "Dividends Explained",     xpReward: 10, state: "locked"                          },
+  { id: "foundations-10", title: "Your First Trade",        xpReward: 20, state: "locked"                          },
 ];
 
 // ─── SVG geometry — Desktop ───────────────────────────────────────────────────
