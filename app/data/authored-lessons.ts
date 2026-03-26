@@ -3415,14 +3415,32 @@ const normalizedTargetLearnPanelsByLesson: Record<string, LearnPanel[]> = {
       "Start with the cleanest relationship first. Stock means owning part of a company.",
       {
         eyebrow: "Hook",
-        activityKind: "reveal-card",
+        activityKind: "tap-sort",
         activityData: {
-          statement: "You bought stock in a company.",
-          actionLabel: "What relationship is that?",
-          revealTitle: "Core relationship",
-          revealCopy: "You now own part of the business.",
-          highlightText: "own part",
+          buckets: ["Stock means", "Not stock"],
+          cards: [
+            {
+              id: "stock-ownership",
+              label: "Owning part of a business",
+              target: "Stock means",
+              description: "This is the core stock relationship.",
+            },
+            {
+              id: "stock-loan",
+              label: "Lending money for fixed interest",
+              target: "Not stock",
+              description: "That is bond language, not stock language.",
+            },
+            {
+              id: "stock-cash",
+              label: "Parking cash in an account",
+              target: "Not stock",
+              description: "That is savings, not business ownership.",
+            },
+          ],
         },
+        noteLabel: "Core relationship",
+        note: "A stock starts with ownership. The other products answer different needs.",
       },
     ),
     learnPanel(
@@ -3526,14 +3544,32 @@ const normalizedTargetLearnPanelsByLesson: Record<string, LearnPanel[]> = {
       "A stronger outlook can help the stock, but the next move is never automatic.",
       {
         eyebrow: "Lock-in",
-        activityKind: "reveal-card",
+        activityKind: "tap-sort",
         activityData: {
-          statement: "The company reports strong results.",
-          actionLabel: "So the stock must jump?",
-          revealTitle: "Careful read",
-          revealCopy: "The outlook may improve, but the price move is never guaranteed.",
-          highlightText: "never guaranteed",
+          buckets: ["Careful read", "Too certain"],
+          cards: [
+            {
+              id: "improve-outlook",
+              label: "Strong results can improve expectations",
+              target: "Careful read",
+              description: "This keeps the focus on expectations, not certainty.",
+            },
+            {
+              id: "must-jump",
+              label: "Strong results mean the stock must jump",
+              target: "Too certain",
+              description: "Markets are not forced to move one way every time.",
+            },
+            {
+              id: "future-guaranteed",
+              label: "Good headlines guarantee the next move",
+              target: "Too certain",
+              description: "A headline can help the outlook without guaranteeing price.",
+            },
+          ],
         },
+        noteLabel: "Careful read",
+        note: "Expectations can improve while uncertainty still remains.",
       },
     ),
   ],
@@ -3544,14 +3580,32 @@ const normalizedTargetLearnPanelsByLesson: Record<string, LearnPanel[]> = {
       "The first move is not prediction. It is careful observation.",
       {
         eyebrow: "Hook",
-        activityKind: "reveal-card",
+        activityKind: "tap-sort",
         activityData: {
-          statement: "A stock makes a big move.",
-          actionLabel: "First move?",
-          revealTitle: "Start here",
-          revealCopy: "Observe what happened before you predict what happens next.",
-          highlightText: "Observe",
+          buckets: ["Start here", "Too early"],
+          cards: [
+            {
+              id: "observe-first",
+              label: "Observe what happened",
+              target: "Start here",
+              description: "Good analysis starts with evidence.",
+            },
+            {
+              id: "predict-first",
+              label: "Jump straight to a prediction",
+              target: "Too early",
+              description: "That skips the evidence stage.",
+            },
+            {
+              id: "certainty-first",
+              label: "Act like you already know the future",
+              target: "Too early",
+              description: "That is confidence before evidence.",
+            },
+          ],
         },
+        noteLabel: "Start here",
+        note: "Observation is the first move. Interpretation comes later.",
       },
     ),
     learnPanel(

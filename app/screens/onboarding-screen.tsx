@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { GoogleAccountButton } from "../components/google-account-button";
 import { useAuth } from "../lib/auth-context";
-import { syncNicknameForCurrentUser } from "../lib/remote-progress";
+import { queueRoadmapLoginGate } from "../lib/post-onboarding-login-gate";
+import { getNickname, setNickname } from "../lib/course-storage";
 
 // ─── Quiz storage ─────────────────────────────────────────────────────────────
 export const QUIZ_KEY = "stoked_quiz";
+const onboardingGoogleContinueKey = "stoked-onboarding-continue-google";
 
 export type QuizData = {
   nickname: string;
@@ -232,16 +234,14 @@ export function OnboardingScreen() {
   const [nickname, setNicknameDraft] = useState("");
   const [googleLoading, setGoogleLoading] = useState(false);
   const [authErrorMessage, setAuthErrorMessage] = useState<string | null>(null);
-  const [autoContinuePending, setAutoContinuePending] = useState(false);
 
   // Quiz state
-  const [quizStep, setQuizStep]         = useState<QuizStep>("hidden");
+  const [quizStep, setQuizStep]         = useState<QuizStep>(0);
   const [answers, setAnswers]           = useState<Record<string, string>>({});
   const [selected, setSelected]         = useState("");
   const [isExiting, setIsExiting]       = useState(false);
   const [loadingPhase, setLoadingPhase] = useState(0);
 
-  const ready = nickname.trim().length > 0;
   const signedInEmail = user?.email ?? null;
   const signedInName =
     typeof user?.user_metadata?.nickname === "string"
@@ -259,63 +259,36 @@ export function OnboardingScreen() {
         : null;
 
   useEffect(() => {
-    setNicknameDraft((current) => current || signedInName || "");
+    setNicknameDraft((current) => current || signedInName || getNickname());
   }, [signedInName]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const authError = params.get("auth_error");
-    const continueMode = params.get("continue");
     if (authError) setAuthErrorMessage(authError);
-    if (continueMode === "google") {
-      setAutoContinuePending(true);
+    if (typeof window !== "undefined") {
+      window.sessionStorage.removeItem(onboardingGoogleContinueKey);
     }
   }, []);
 
-  // Save nickname then check if quiz already done
-  const persistNicknameAndContinue = useCallback(() => {
-    if (!ready) return;
-    import("../lib/course-storage").then(({ setNickname }) => {
-      const trimmed = nickname.trim();
-      setNickname(trimmed);
-      void syncNicknameForCurrentUser(trimmed).catch((error) => {
-        console.error("Failed to sync nickname during onboarding", error);
-      });
-      const alreadyDone = Boolean(getQuizData());
-      if (alreadyDone) {
-        router.push("/course");
-      } else {
-        setQuizStep(0);
-        setSelected("");
-      }
-    });
-  }, [nickname, ready, router]);
-
-  function handleContinueToCourse() {
-    if (!ready) {
-      return;
-    }
-    persistNicknameAndContinue();
-  }
   const handleContinueWithGoogle = useCallback(async () => {
     if (googleLoading) return;
-    if (user) { persistNicknameAndContinue(); return; }
+    if (user) {
+      return;
+    }
     try {
       setGoogleLoading(true);
       setAuthErrorMessage(null);
-      await signInWithGoogle("/onboarding?continue=google");
+      if (typeof window !== "undefined") {
+        window.sessionStorage.setItem(onboardingGoogleContinueKey, "1");
+      }
+      await signInWithGoogle("/onboarding");
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unable to sign in with Google.";
       setAuthErrorMessage(message);
       setGoogleLoading(false);
     }
-  }, [googleLoading, persistNicknameAndContinue, signInWithGoogle, user]);
-
-  useEffect(() => {
-    if (!autoContinuePending || !user || !ready) return;
-    setAutoContinuePending(false);
-    void handleContinueWithGoogle();
-  }, [autoContinuePending, handleContinueWithGoogle, ready, user]);
+  }, [googleLoading, signInWithGoogle, user]);
 
   async function handleGoogleSignIn() {
     if (googleLoading) return;
@@ -323,7 +296,10 @@ export function OnboardingScreen() {
       if (user) { router.push("/profile"); return; }
       setGoogleLoading(true);
       setAuthErrorMessage(null);
-      await signInWithGoogle("/onboarding?continue=google");
+      if (typeof window !== "undefined") {
+        window.sessionStorage.setItem(onboardingGoogleContinueKey, "1");
+      }
+      await signInWithGoogle("/onboarding");
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unable to sign in with Google.";
       setAuthErrorMessage(message);
@@ -350,12 +326,15 @@ export function OnboardingScreen() {
     } else {
       // Final question → loading state
       const quizData: QuizData = {
-        nickname:        nickname.trim(),
+        nickname:        (signedInName || nickname.trim() || "Learner").trim(),
         experienceLevel: newAnswers.experienceLevel ?? "beginner",
         goal:            newAnswers.goal ?? "curious",
         timeCommitment:  newAnswers.timeCommitment ?? "casual",
         completedAt:     new Date().toISOString(),
       };
+      if (quizData.nickname) {
+        setNickname(quizData.nickname);
+      }
       saveQuizData(quizData);
       setIsExiting(true);
       setTimeout(() => {
@@ -381,21 +360,14 @@ export function OnboardingScreen() {
     }, 200);
   }
 
-  function handleSkip() {
-    const quizData: QuizData = {
-      nickname:        nickname.trim() || "Learner",
-      experienceLevel: "beginner",
-      goal:            "curious",
-      timeCommitment:  "casual",
-      completedAt:     new Date().toISOString(),
-    };
-    saveQuizData(quizData);
+  function handleStartLearning() {
+    queueRoadmapLoginGate();
     router.push("/course");
   }
 
 
   const f = "var(--font-dm-sans,'DM Sans',system-ui,sans-serif)";
-  const displayName = nickname.trim() || "Learner";
+  const displayName = signedInName || nickname.trim() || "Learner";
   const finalAnswers = answers as Partial<Record<string, string>>;
   const pct = typeof quizStep === "number" ? Math.round(((quizStep + 1) / QUESTIONS.length) * 100) : 100;
 
@@ -411,12 +383,7 @@ export function OnboardingScreen() {
             <span style={{ fontWeight: 900, fontSize: 22, color: "#172b4d", letterSpacing: "-0.5px", lineHeight: 1 }}>stoked</span>
             <span style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: "#22c55e", flexShrink: 0, marginBottom: 3 }} />
           </Link>
-          {quizStep !== "loading" && quizStep !== "results" && (
-            <button type="button" onClick={handleSkip}
-              style={{ fontSize: 14, fontWeight: 600, color: "#9ca3af", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>
-              ⏭ Skip for now
-            </button>
-          )}
+          <div style={{ width: 84 }} />
         </header>
 
         <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
@@ -469,7 +436,7 @@ export function OnboardingScreen() {
                 <button
                   type="button"
                   className="start-btn-pulse"
-                  onClick={() => router.push("/course")}
+                  onClick={handleStartLearning}
                   style={{
                     width: "100%", padding: "18px", fontSize: 16, fontFamily: f,
                     fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em",
@@ -599,11 +566,6 @@ export function OnboardingScreen() {
                   </button>
                 </div>
 
-                <p style={{ textAlign: "center", marginTop: 18 }}>
-                  <button type="button" onClick={handleSkip} style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", textDecoration: "underline", fontSize: 14, fontFamily: f }}>
-                    ⏭ Skip for now
-                  </button>
-                </p>
               </>
             )}
           </div>
@@ -612,98 +574,4 @@ export function OnboardingScreen() {
     );
   }
 
-  // ── Render: Original nickname form ────────────────────────────────────────
-  return (
-    <div style={{ minHeight: "100vh", background: "#f0fdf4", fontFamily: f, display: "flex", flexDirection: "column" }}>
-      <style dangerouslySetInnerHTML={{ __html: QUIZ_CSS }} />
-
-      {/* Nav */}
-      <header style={{ padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <Link href="/" style={{ display: "inline-flex", alignItems: "flex-end", gap: 3, textDecoration: "none" }}>
-          <span style={{ fontWeight: 900, fontSize: 22, color: "#172b4d", letterSpacing: "-0.5px", lineHeight: 1 }}>stoked</span>
-          <span style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: "#22c55e", flexShrink: 0, marginBottom: 3 }} />
-        </Link>
-        <GoogleAccountButton
-          disabled={googleLoading || (authLoading && !user)}
-          onClick={handleGoogleSignIn}
-          photoUrl={photoUrl}
-          signedInHref="/profile"
-          signedIn={Boolean(user)}
-        />
-      </header>
-
-      {/* Content */}
-      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
-        <div style={{ width: "100%", maxWidth: 480 }}>
-
-          {/* Logo */}
-          <div style={{ textAlign: "center", marginBottom: 32 }}>
-            <div style={{ display: "inline-flex", alignItems: "flex-end", gap: 3, marginBottom: 24, background: "#dcfce7", borderRadius: 24, padding: "16px 24px" }}>
-              <span style={{ fontFamily: f, fontWeight: 900, fontSize: 40, color: "#172b4d", letterSpacing: "-1.5px", lineHeight: 1 }}>stoked</span>
-              <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#22c55e", flexShrink: 0, marginBottom: 5, display: "inline-block" }} />
-            </div>
-            <h1 style={{ fontWeight: 900, fontSize: "clamp(28px,5vw,40px)", color: "#172b4d", letterSpacing: "-0.5px", marginBottom: 12, lineHeight: 1.15 }}>
-              What should we call you?
-            </h1>
-            <p style={{ fontSize: 18, color: "#6b7280", lineHeight: 1.6 }}>
-              Choose a nickname to personalize your learning journey
-            </p>
-          </div>
-
-          {/* Card */}
-          <div style={{ background: "#fff", borderRadius: 24, border: "2px solid #e5e7eb", boxShadow: "0 8px 0 #e5e7eb", padding: 32 }}>
-            <div style={{ marginBottom: 20 }}>
-              <p style={{ display: "block", fontWeight: 700, fontSize: 14, color: "#374151", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                {signedInEmail ? "Connected account" : "Account"}
-              </p>
-              {signedInEmail ? (
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#f0fdf4", border: "2px solid #bbf7d0", borderRadius: 999, padding: "6px 12px", marginBottom: 10, color: "#15803d", fontSize: 12, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#22c55e" }} />
-                  Google connected
-                </div>
-              ) : null}
-              <p style={{ fontSize: 13, color: "#9ca3af", marginTop: 8 }}>
-                {signedInEmail
-                  ? `Signed in as ${signedInEmail}`
-                  : "You can continue as a guest, or connect the same Google account from your previous version."}
-              </p>
-              {authErrorMessage ? (
-                <p style={{ fontSize: 13, color: "#dc2626", marginTop: 10 }}>{authErrorMessage}</p>
-              ) : null}
-            </div>
-
-            <div style={{ height: 1, background: "#e5e7eb", margin: "0 0 20px" }} />
-
-            <label style={{ display: "block", fontWeight: 700, fontSize: 14, color: "#374151", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>
-              Your nickname
-            </label>
-            <input
-              autoFocus maxLength={20}
-              onChange={(e) => setNicknameDraft(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") handleContinueToCourse(); }}
-              placeholder="e.g., Alex"
-              type="text" value={nickname}
-              style={{ width: "100%", padding: "16px 20px", fontSize: 18, fontFamily: f, fontWeight: 600, color: "#172b4d", background: "#fff", border: `2px solid ${ready ? "#22c55e" : "#e5e7eb"}`, borderRadius: 16, outline: "none", boxSizing: "border-box", transition: "border-color 200ms" }}
-            />
-            <p style={{ fontSize: 13, color: "#9ca3af", marginTop: 8, marginBottom: 24 }}>
-              This will appear on your certificate{signedInName ? ` and defaults to ${signedInName}` : ""}
-            </p>
-
-            <button disabled={!ready} onClick={handleContinueToCourse} type="button"
-              style={{ width: "100%", padding: "16px", fontSize: 16, fontFamily: f, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", color: "#fff", background: ready ? "#22c55e" : "#d1d5db", boxShadow: ready ? "0 5px 0 #16a34a" : "0 5px 0 #b0b7c3", border: "none", borderRadius: 16, cursor: ready ? "pointer" : "not-allowed", transition: "background 200ms, box-shadow 200ms", minHeight: 48 }}
-              onMouseDown={(e) => { if (!ready) return; const el = e.currentTarget; el.style.transform = "translateY(3px)"; el.style.boxShadow = "0 2px 0 #16a34a"; }}
-              onMouseUp={(e) => { const el = e.currentTarget; el.style.transform = ""; el.style.boxShadow = ready ? "0 5px 0 #16a34a" : "0 5px 0 #b0b7c3"; }}
-            >
-              {user ? "Continue to course" : "Continue as guest"}
-            </button>
-          </div>
-
-          <p style={{ textAlign: "center", marginTop: 20, fontSize: 14, color: "#9ca3af" }}>
-            Already started?{" "}
-            <Link href="/course" style={{ color: "#22c55e", fontWeight: 700, textDecoration: "none" }}>Go to your course</Link>
-          </p>
-        </div>
-      </div>
-    </div>
-  );
 }

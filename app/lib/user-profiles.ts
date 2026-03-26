@@ -38,7 +38,7 @@ export const reservedUsernames = new Set([
   "team",
 ]);
 
-const usernamePattern = /^[A-Za-z0-9_.]{3,20}$/;
+const usernamePattern = /^[A-Za-z0-9_]{3,20}$/;
 
 export function normalizeUsername(value: string) {
   return value.trim().toLowerCase();
@@ -75,7 +75,7 @@ export function validateUsername(value: string) {
     return {
       normalized,
       valid: false,
-      error: "Use letters, numbers, underscores, or periods only.",
+      error: "Use letters, numbers, and underscores only.",
     };
   }
 

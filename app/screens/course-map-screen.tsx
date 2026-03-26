@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SkillTreeRoadmap, type SkillLesson } from "../components/skill-tree-roadmap";
-import { useEffect, useMemo, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { FinalAchievementCard } from "../components/final-achievement-card";
 import { JourneySurface } from "../components/journey-surface";
 import { useAuth } from "../lib/auth-context";
@@ -16,6 +16,13 @@ import {
   subscribeToCourseProgress,
 } from "../lib/course-progress";
 import { getNickname, subscribeToCourseStorage } from "../lib/course-storage";
+import { getQuizData } from "./onboarding-screen";
+import {
+  clearRoadmapLoginGateTrigger,
+  hasSeenRoadmapLoginGate,
+  hasRoadmapLoginGateTrigger,
+  markRoadmapLoginGateSeen,
+} from "../lib/post-onboarding-login-gate";
 
 // ─── Stoked logo ──────────────────────────────────────────────────────────────
 function StokedLogo() {
@@ -144,6 +151,73 @@ function MobileTopBar({ streak, completionPercent, resumeHref }: MobileBarProps)
   );
 }
 
+type RoadmapLoginGateModalProps = {
+  onContinueAsGuest: () => void;
+  onContinueWithGoogle: () => void;
+};
+
+function RoadmapLoginGateModal({
+  onContinueAsGuest,
+  onContinueWithGoogle,
+}: RoadmapLoginGateModalProps) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm md:p-6">
+      <div
+        className="w-full max-w-[460px] rounded-[28px] border border-[#dcfce7] bg-white p-5 shadow-[0_18px_50px_rgba(15,23,42,0.16)] md:p-7"
+        style={{ animation: "bounceIn 320ms cubic-bezier(0.22,1,0.36,1) both" }}
+      >
+        <div className="inline-flex items-center rounded-full bg-[#f0fdf4] px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-[#16a34a]">
+          SAVE PROGRESS
+        </div>
+
+        <h2 className="mt-4 text-[28px] font-black leading-[1.05] tracking-[-0.04em] text-[#1a2b4a] md:text-[32px]">
+          Save your progress
+        </h2>
+
+        <p className="mt-3 max-w-[34ch] text-[15px] leading-6 text-[#475569] md:text-base">
+          Continue with Google to save your roadmap, streak, and lesson history. Then you’ll choose your username.
+        </p>
+
+        <div className="mt-6 flex flex-col gap-2.5">
+          <button
+            type="button"
+            onClick={onContinueWithGoogle}
+            className="flex items-center justify-center gap-3 rounded-[18px] bg-[#22c55e] px-5 py-3.5 text-sm font-black uppercase tracking-[0.14em] text-white shadow-[0_4px_0_#16a34a] transition-transform active:translate-y-[1px] active:shadow-[0_2px_0_#16a34a] md:text-[15px]"
+          >
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white text-[15px] shadow-[0_1px_0_rgba(15,23,42,0.08)]">
+              <svg aria-hidden="true" width="15" height="15" viewBox="0 0 18 18">
+                <path d="M17.64 9.2045c0-.6382-.0573-1.2518-.1636-1.8409H9v3.4818h4.8436c-.2087 1.125-.8427 2.0782-1.7973 2.7155v2.2582h2.9086c1.7018-1.5664 2.6851-3.8737 2.6851-6.6146Z" fill="#4285F4"/>
+                <path d="M9 18c2.43 0 4.4673-.8059 5.9564-2.1805l-2.9086-2.2582c-.806.54-1.8368.8591-3.0478.8591-2.3455 0-4.3282-1.5845-5.0364-3.7136H.9573v2.3318A9 9 0 0 0 9 18Z" fill="#34A853"/>
+                <path d="M3.9636 10.7068A5.4094 5.4094 0 0 1 3.6818 9c0-.5927.1027-1.1682.2818-1.7068V4.9614H.9573A9 9 0 0 0 0 9c0 1.4523.3477 2.8273.9573 4.0386l3.0063-2.3318Z" fill="#FBBC05"/>
+                <path d="M9 3.5795c1.3214 0 2.5077.4541 3.4405 1.3454l2.5804-2.5804C13.4636.8918 11.4264 0 9 0A9 9 0 0 0 .9573 4.9614l3.0063 2.3318C4.6718 5.1641 6.6545 3.5795 9 3.5795Z" fill="#EA4335"/>
+              </svg>
+            </span>
+            Continue with Google
+          </button>
+          <button
+            type="button"
+            onClick={onContinueAsGuest}
+            className="rounded-[18px] border border-[#dbe4f0] bg-white px-5 py-3.5 text-sm font-black uppercase tracking-[0.14em] text-[#475569] transition-colors hover:bg-[#f8fafc] md:text-[15px]"
+          >
+            Continue as guest
+          </button>
+        </div>
+
+        <p className="mt-4 text-center text-sm text-[#64748b]">
+          Already have an account?{" "}
+          <button
+            type="button"
+            onClick={onContinueWithGoogle}
+            className="font-bold text-[#1a2b4a] underline decoration-[#cbd5e1] underline-offset-4"
+          >
+            Log in
+          </button>
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /** Maps a DerivedModule's lessons to the flat SkillLesson[] shape the roadmap needs. */
@@ -163,7 +237,8 @@ function toSkillLessons(module: DerivedModule): SkillLesson[] {
 // ─── Main screen ──────────────────────────────────────────────────────────────
 export function CourseMapScreen() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { signInWithGoogle, user } = useAuth();
+  const [showRoadmapLoginGate, setShowRoadmapLoginGate] = useState(false);
   const nickname = useSyncExternalStore(
     subscribeToCourseStorage,
     getNickname,
@@ -195,6 +270,32 @@ export function CourseMapScreen() {
 
     return () => {
       window.clearInterval(intervalId);
+    };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      clearRoadmapLoginGateTrigger();
+      markRoadmapLoginGateSeen();
+      return;
+    }
+
+    const triggeredFromOnboarding = hasRoadmapLoginGateTrigger();
+    const hasCompletedOnboarding = Boolean(getQuizData());
+
+    if (!triggeredFromOnboarding && (!hasCompletedOnboarding || hasSeenRoadmapLoginGate())) {
+      return;
+    }
+
+    // Let the roadmap land as the reward before introducing auth friction.
+    const revealDelayMs = triggeredFromOnboarding ? 1400 : 320;
+    const timeoutId = window.setTimeout(() => {
+      clearRoadmapLoginGateTrigger();
+      setShowRoadmapLoginGate(true);
+    }, revealDelayMs);
+
+    return () => {
+      window.clearTimeout(timeoutId);
     };
   }, [user]);
 
@@ -346,6 +447,19 @@ export function CourseMapScreen() {
         </div>
 
       </div>
+
+      {showRoadmapLoginGate && !user && (
+        <RoadmapLoginGateModal
+          onContinueAsGuest={() => {
+            markRoadmapLoginGateSeen();
+            setShowRoadmapLoginGate(false);
+          }}
+          onContinueWithGoogle={() => {
+            markRoadmapLoginGateSeen();
+            void signInWithGoogle("/course");
+          }}
+        />
+      )}
     </JourneySurface>
   );
 }

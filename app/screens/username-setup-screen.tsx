@@ -133,21 +133,20 @@ export function UsernameSetupScreen() {
         <div className="flex items-center justify-between">
           <StokedLogo />
           <span className="rounded-2xl border-2 border-[#dcfce7] bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-[#22c55e] shadow-[0_3px_0_#dcfce7]">
-            One-time setup
+            One last step
           </span>
         </div>
 
         <div className="mx-auto mt-14 w-full max-w-2xl">
           <div className="rounded-[32px] border-2 border-[#dcfce7] bg-white p-8 shadow-[0_10px_0_#dcfce7] sm:p-10">
             <p className="text-xs font-black uppercase tracking-[0.18em] text-[#22c55e]">
-              Username
+              One last step
             </p>
             <h1 className="mt-3 text-4xl font-black tracking-tight text-[#172b4d]">
-              Pick your Stoked username
+              Choose your username
             </h1>
             <p className="mt-4 text-base leading-7 text-gray-500">
-              Your username powers friends, private leaderboards, and future social features.
-              It is unique to you and never exposes your email.
+              This is how your progress, streak, and future friends will recognize you in Stoked.
             </p>
 
             <div className="mt-8 space-y-4">
@@ -181,7 +180,7 @@ export function UsernameSetupScreen() {
                   3-20 characters
                 </span>
                 <span className="rounded-full bg-[#f1f5f9] px-3 py-1 font-semibold text-[#64748b]">
-                  letters, numbers, underscores, periods
+                  letters, numbers, and underscores only
                 </span>
               </div>
 
@@ -205,7 +204,7 @@ export function UsernameSetupScreen() {
                 ) : successMessage ? (
                   <p className="text-[#16a34a]">{successMessage}</p>
                 ) : (
-                  <p className="text-[#64748b]">Choose a name friends can search later.</p>
+                  <p className="text-[#64748b]">3–20 characters. Letters, numbers, and underscores only.</p>
                 )}
               </div>
             </div>
@@ -236,7 +235,7 @@ export function UsernameSetupScreen() {
               onClick={() => void handleSubmit()}
               type="button"
             >
-              {saving ? "Saving..." : "Save username"}
+              {saving ? "Saving..." : "Continue"}
             </button>
           </div>
         </div>

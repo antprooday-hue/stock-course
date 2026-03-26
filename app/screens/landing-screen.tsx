@@ -8,6 +8,7 @@ import { getQuizData, type QuizData } from "./onboarding-screen";
 
 // ─── Shared font ──────────────────────────────────────────────────────────────
 const font = "var(--font-dm-sans,'DM Sans',system-ui,sans-serif)";
+const onboardingGoogleContinueKey = "stoked-onboarding-continue-google";
 
 // ─── Gamification helpers ─────────────────────────────────────────────────────
 const XP_KEY     = "stoked_xp";
@@ -842,7 +843,10 @@ export function LandingScreen() {
   async function handleGoogleLogin() {
     try {
       if (user) { window.location.href = "/profile"; return; }
-      await signInWithGoogle("/course");
+      if (typeof window !== "undefined") {
+        window.sessionStorage.setItem(onboardingGoogleContinueKey, "1");
+      }
+      await signInWithGoogle("/onboarding");
     } catch (error) {
       console.error("Failed to start Google sign-in", error);
     }
@@ -863,18 +867,34 @@ export function LandingScreen() {
                 ⚡ {xp} XP
               </span>
             )}
-            {!user && !isMobile && (
-              <DuoBtn href="/onboarding" variant="primary" style={{ padding: "8px 22px", fontSize: 13 }}>
-                Start Free
-              </DuoBtn>
+            {user ? (
+              <GoogleAccountButton
+                disabled={authLoading && !user}
+                onClick={handleGoogleLogin}
+                photoUrl={photoUrl}
+                signedInHref="/profile"
+                signedIn
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={handleGoogleLogin}
+                disabled={authLoading}
+                style={{
+                  border: "none",
+                  background: "transparent",
+                  color: "#6b7280",
+                  fontFamily: font,
+                  fontSize: 14,
+                  fontWeight: 700,
+                  cursor: authLoading ? "not-allowed" : "pointer",
+                  padding: "8px 4px",
+                  opacity: authLoading ? 0.7 : 1,
+                }}
+              >
+                Log in
+              </button>
             )}
-            <GoogleAccountButton
-              disabled={authLoading && !user}
-              onClick={handleGoogleLogin}
-              photoUrl={photoUrl}
-              signedInHref="/profile"
-              signedIn={Boolean(user)}
-            />
           </nav>
         </div>
       </header>
@@ -925,34 +945,24 @@ export function LandingScreen() {
                   Start Learning
                 </DuoBtn>
               ) : (
-                <>
-                  <DuoBtn href="/onboarding" variant="primary" big style={isMobile ? { width: "100%", padding: "14px 16px" } : {}}>
-                    Start Free
-                  </DuoBtn>
-                  <button
-                    type="button"
-                    onClick={handleGoogleLogin}
-                    disabled={authLoading}
-                    className="l-btn"
-                    style={{
-                      display: "inline-flex", alignItems: "center", justifyContent: "center",
-                      fontFamily: font, fontWeight: 800,
-                      fontSize: isMobile ? 14 : 16, letterSpacing: "0.05em",
-                      textTransform: "uppercase", textDecoration: "none",
-                      padding: isMobile ? "14px 16px" : "16px 40px",
-                      width: isMobile ? "100%" : undefined,
-                      borderRadius: 16, cursor: authLoading ? "not-allowed" : "pointer",
-                      border: "2px solid #e5e7eb", transition: "filter 80ms, transform 80ms",
-                      userSelect: "none", whiteSpace: "nowrap",
-                      backgroundColor: "#fff", color: "#172b4d",
-                      boxShadow: "0 5px 0 #d1d5db", opacity: authLoading ? 0.7 : 1,
-                    }}
-                  >
-                    Sign in with Google
-                  </button>
-                </>
+                <DuoBtn href="/onboarding" variant="primary" big style={isMobile ? { width: "100%", padding: "14px 16px" } : {}}>
+                  Start Free
+                </DuoBtn>
               )}
             </div>
+            {!user && (
+              <p
+                style={{
+                  marginTop: isMobile ? 10 : 14,
+                  fontSize: isMobile ? 13 : 14,
+                  color: "#6b7280",
+                  lineHeight: 1.6,
+                  maxWidth: isMobile ? "100%" : 360,
+                }}
+              >
+                Start free, then choose Google or guest on the next step.
+              </p>
+            )}
 
             {/* Social proof — mobile only */}
             {isMobile && (
@@ -1069,7 +1079,7 @@ export function LandingScreen() {
             Start learning today.<br />It&apos;s free, forever.
           </h2>
           <p style={{ fontSize: "clamp(14px,2vw,18px)" as string, color: "rgba(255,255,255,0.85)", marginBottom: 28, lineHeight: 1.6 }}>
-            Start in seconds — no signup needed. Sign in with Google to save your progress across devices.
+            Start free, then choose Google or guest on the next step.
           </p>
           <DuoBtn href="/onboarding" variant="white-on-green" big style={isMobile ? { width: "100%", padding: "14px 16px" } : {}}>
             Start Free
